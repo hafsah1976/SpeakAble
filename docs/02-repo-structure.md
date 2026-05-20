@@ -3,7 +3,7 @@
 The monorepo uses npm workspaces for TypeScript packages and a separate Python service directory for FastAPI.
 
 ```text
-assertive-coach/
+speakable/
   apps/
     web/
       src/app/                 Next.js App Router routes

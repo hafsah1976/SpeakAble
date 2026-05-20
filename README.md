@@ -89,16 +89,31 @@ npm run typecheck
 npm run test:unit
 npm run test:integration
 npm run test:e2e
-npm --workspace @assertive-coach/web run build
+npm --workspace @speakable/web run build
 npm run openapi
 ```
 
 ## Production Deployment
 
+GitHub Actions is configured with two workflows:
+
+- `CI` runs linting, typechecking, unit tests, integration tests, Playwright e2e tests, build, and OpenAPI drift checks.
+- `Deploy` runs Vercel, Render, Supabase, and EAS deployment jobs. Jobs skip cleanly until their provider secrets are configured.
+
+The mobile deployment job intentionally uses `expo/expo-github-action@v8`, which is the current resolvable Expo GitHub Action wrapper. It still installs the latest EAS CLI through `eas-version: latest`.
+
+Required GitHub repository secrets for full production deployment:
+
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- `RENDER_DEPLOY_HOOK_URL`
+- `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`
+- `EXPO_TOKEN`
+- Optional: `EAS_SUBMIT_ON_DEPLOY=true` to submit mobile builds after EAS production builds start.
+
 Web on Vercel:
 
 1. Create a Vercel project rooted at the repository root.
-2. Set the build command to `npm --workspace @assertive-coach/web run build`.
+2. Set the build command to `npm --workspace @speakable/web run build`.
 3. Set the output directory to `apps/web/.next`.
 4. Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_API_URL`.
 5. Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` for production.

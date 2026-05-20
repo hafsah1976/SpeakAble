@@ -69,7 +69,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm --workspace @assertive-coach/web run build
+      - run: npm --workspace @speakable/web run build
 
   openapi:
     runs-on: ubuntu-latest

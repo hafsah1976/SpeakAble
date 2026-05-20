@@ -45,14 +45,17 @@ Critical path:
 
 ## CI
 
-The GitHub Actions workflow should run:
+The GitHub Actions `CI` workflow runs:
 
 - npm install,
 - TypeScript typecheck,
 - Next.js build,
 - Python dependency install,
 - pytest,
-- migration lint or SQL syntax check where available.
+- Playwright e2e tests,
+- OpenAPI generation drift checks.
+
+The GitHub Actions `Deploy` workflow runs provider-specific deploy jobs for Vercel, Render, Supabase, and EAS. Each job skips cleanly until the matching repository secrets are configured. The EAS job uses `expo/expo-github-action@v8`, the current resolvable Expo GitHub Action wrapper, with `eas-version: latest`.
 
 ## Deployment
 
@@ -97,3 +100,5 @@ The GitHub Actions workflow should run:
 - External sharing remains disabled unless the explicit feature flag is enabled.
 - Local demo fallback is disabled in production builds.
 - Captions, keyboard navigation, screen-reader labels, reduced motion, and adjustable type controls are verified.
+- GitHub Actions `CI` and `Deploy` are green on `main`.
+- Production deploy secrets are configured before claiming the app is live on hosted providers.

@@ -31,8 +31,8 @@ import {
   type PrivacyDeletionResponse,
   type PrivacyExportResponse,
   type Relationship
-} from "@assertive-coach/types";
-import { colors, radii, spacing, typeScale as sharedTypeScale } from "@assertive-coach/ui";
+} from "@speakable/types";
+import { colors, radii, spacing, typeScale as sharedTypeScale } from "@speakable/ui";
 import { getSupabaseMobileClient } from "../lib/supabase";
 
 const tones: Array<{ value: CoachTone; label: string; helper: string }> = [

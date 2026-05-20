@@ -2,6 +2,6 @@
   "version": 2,
   "framework": "nextjs",
   "installCommand": "npm ci",
-  "buildCommand": "npm --workspace @assertive-coach/web run build",
+  "buildCommand": "npm --workspace @speakable/web run build",
   "outputDirectory": "apps/web/.next"
 }

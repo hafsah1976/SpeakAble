@@ -9,7 +9,7 @@ export default defineConfig({
     trace: "on-first-retry"
   },
   webServer: {
-    command: "cd ../.. && npm --workspace @assertive-coach/web run dev -- --port 3002",
+    command: "cd ../.. && npm --workspace @speakable/web run dev -- --port 3002",
     url: "http://localhost:3002",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

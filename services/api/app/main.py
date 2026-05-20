@@ -53,7 +53,7 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["health"])
     async def health() -> dict[str, str]:
-        return {"status": "ok", "service": "assertive-coach-api", "version": "0.1.0"}
+        return {"status": "ok", "service": "speakable-api", "version": "0.1.0"}
 
     app.include_router(coach.router, prefix="/v1")
     app.include_router(onboarding.router, prefix="/v1")

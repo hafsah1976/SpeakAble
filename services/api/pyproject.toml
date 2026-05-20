@@ -1,5 +1,5 @@
 [project]
-name = "assertive-coach-api"
+name = "speakable-api"
 version = "0.1.0"
 description = "FastAPI service for SpeakAble"
 requires-python = ">=3.13"

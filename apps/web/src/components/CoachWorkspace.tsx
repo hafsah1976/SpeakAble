@@ -39,7 +39,7 @@ import {
   type PrivacyExportResponse,
   type Relationship,
   type RolePlayResponse
-} from "@assertive-coach/types";
+} from "@speakable/types";
 import { getSupabaseBrowserClient } from "../lib/supabase";
 
 const tones: Array<{ value: CoachTone; label: string; helper: string }> = [

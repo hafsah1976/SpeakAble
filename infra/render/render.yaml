@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: assertive-coach-api
+    name: speakable-api
     env: docker
     plan: starter
     dockerfilePath: services/api/Dockerfile

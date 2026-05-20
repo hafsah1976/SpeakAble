@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd ../.. && npm install && npm --workspace @assertive-coach/web run build",
+  "buildCommand": "cd ../.. && npm install && npm --workspace @speakable/web run build",
   "installCommand": "cd ../.. && npm install",
   "outputDirectory": ".next"
 }

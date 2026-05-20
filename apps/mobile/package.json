@@ -1,5 +1,5 @@
 {
-  "name": "@assertive-coach/mobile",
+  "name": "@speakable/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@assertive-coach/types": "0.1.0",
-    "@assertive-coach/ui": "0.1.0",
+    "@speakable/types": "0.1.0",
+    "@speakable/ui": "0.1.0",
     "@supabase/supabase-js": "2.106.0",
     "expo": "55.0.25",
     "expo-secure-store": "^55.0.14",

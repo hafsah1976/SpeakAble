@@ -1,5 +1,5 @@
 {
-  "name": "@assertive-coach/web",
+  "name": "@speakable/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,8 +12,8 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@assertive-coach/types": "0.1.0",
-    "@assertive-coach/ui": "0.1.0",
+    "@speakable/types": "0.1.0",
+    "@speakable/ui": "0.1.0",
     "@supabase/supabase-js": "2.106.0",
     "lucide-react": "1.16.0",
     "next": "16.2.6",

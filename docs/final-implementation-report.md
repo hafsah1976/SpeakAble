@@ -3,6 +3,7 @@
 ## Delivered
 
 - Scaffolded the SpeakAble monorepo with Next.js web, Expo mobile, FastAPI API, shared TypeScript contracts, shared UI tokens, Supabase migrations, seed data, CI, and deployment templates.
+- Aligned internal package names, deployment labels, and user-facing branding around SpeakAble.
 - Added planning artifacts for system architecture, repo structure, database schema, API contract, testing/deployment, and privacy/safety/moderation risk.
 - Implemented onboarding, baseline assessment, lessons, text role-play, structured feedback scoring, progress, recommendations, moderation reports, and privacy export/delete flows.
 - Kept coaching business logic in reusable API and shared package services rather than UI-only implementations.
@@ -14,7 +15,7 @@
 
 ## Verification
 
-Verified from the repository root on 2026-05-19:
+Verified from the repository root on 2026-05-20:
 
 ```bash
 npm run lint                                # passed
@@ -27,6 +28,11 @@ npm run test:e2e                            # passed, 1 core Playwright flow
 npm run openapi                             # regenerated docs/openapi.json
 npm audit --omit=dev --audit-level=high     # passed high-severity gate
 ```
+
+GitHub Actions on `main`:
+
+- `CI` passed after the SpeakAble package-scope alignment.
+- `Deploy` passed after pinning the Expo GitHub Action wrapper to `expo/expo-github-action@v8`.
 
 Local browser smoke verified `http://localhost:3000` after startup: heading, primary action, and development demo status were visible.
 
