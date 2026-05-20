@@ -45,6 +45,8 @@ Supabase Auth is the shared identity provider for web, mobile, and API authoriza
 
 Local demo fallback is explicitly development-only. Keep `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` in production, leave `EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` unless testing mobile without an API, and set `EXTERNAL_SHARING_ENABLED=false` until the sharing workflow has a moderation review.
 
+The web and mobile apps include visible sign-up, sign-in, sign-out, and protected-session states. If Supabase public keys are missing, web can still run in development demo mode; production waits for Supabase credentials instead of silently using mock auth.
+
 ## Local Setup
 
 ```bash

@@ -32,16 +32,17 @@
 Critical path:
 
 1. Sign up or log in.
-2. Enter a difficult message.
-3. Select relationship, tone, and goal.
-4. Generate an assertive rewrite.
-5. Review structured feedback scores.
-6. Complete baseline assessment.
-7. Open a guided lesson and exercise.
-8. Run a text role-play simulation.
-9. Submit a report.
-10. Export data.
-11. Delete saved sensitive text.
+2. Confirm the workspace is protected by session state.
+3. Enter a difficult message.
+4. Select relationship, tone, and goal.
+5. Generate an assertive rewrite.
+6. Review structured feedback scores.
+7. Complete baseline assessment.
+8. Open a guided lesson and exercise.
+9. Run a text role-play simulation.
+10. Submit a report.
+11. Export data.
+12. Delete saved sensitive text.
 
 ## CI
 
@@ -64,6 +65,7 @@ The GitHub Actions `Deploy` workflow runs provider-specific deploy jobs for Verc
 - Deploy `apps/web` to Vercel or any Next.js capable platform.
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_API_URL`.
 - Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` outside development.
+- Verify sign-up, sign-in, sign-out, and session refresh against the production Supabase project.
 - Enforce auth in server-side route logic, not only proxy/middleware.
 
 ### Mobile
@@ -71,6 +73,7 @@ The GitHub Actions `Deploy` workflow runs provider-specific deploy jobs for Verc
 - Build with EAS for iOS and Android.
 - Configure `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_API_URL`.
 - Store Supabase sessions through `expo-secure-store`; set `EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` outside intentional demos.
+- Verify mobile sign-up, sign-in, sign-out, and session restore on a real device or simulator.
 - Use separate Supabase redirect URLs for development, preview, and production.
 
 ### API

@@ -58,6 +58,110 @@ a {
   text-decoration: none;
 }
 
+.auth-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: var(--surface);
+  color: var(--text);
+  padding: 24px;
+}
+
+.auth-panel {
+  display: grid;
+  gap: 18px;
+  width: min(100%, 460px);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-card {
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.auth-card h1,
+.auth-card p {
+  margin: 0;
+}
+
+.auth-card h1 {
+  font-size: 34px;
+  font-weight: 780;
+  line-height: 1.08;
+}
+
+.auth-card p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.auth-tabs button,
+.mini-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--muted);
+  font-weight: 780;
+}
+
+.auth-tabs button {
+  min-height: 42px;
+}
+
+.auth-tabs button.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-status {
+  border-left: 3px solid var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue) !important;
+  padding: 10px 12px;
+}
+
+.auth-warning {
+  display: flex;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px;
+}
+
+.auth-warning svg {
+  color: var(--accent-dark);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr) 360px;
@@ -180,6 +284,42 @@ a {
 
 .support-panel svg {
   color: var(--blue);
+}
+
+.account-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #ffffff;
+  padding: 12px;
+}
+
+.account-panel span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.account-panel strong {
+  display: block;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mini-action {
+  min-height: 34px;
+  color: var(--accent-dark);
+}
+
+.mini-action:hover {
+  border-color: var(--accent);
+  background: var(--surface);
 }
 
 .workspace {

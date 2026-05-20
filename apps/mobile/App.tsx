@@ -1,10 +1,10 @@
 import { StatusBar } from "expo-status-bar";
-import { CoachScreen } from "./src/screens/CoachScreen";
+import { AuthGate } from "./src/screens/AuthGate";
 
 export default function App() {
   return (
     <>
-      <CoachScreen />
+      <AuthGate />
       <StatusBar style="dark" />
     </>
   );

@@ -33,7 +33,6 @@ import {
   type Relationship
 } from "@speakable/types";
 import { colors, radii, spacing, typeScale as sharedTypeScale } from "@speakable/ui";
-import { getSupabaseMobileClient } from "../lib/supabase";
 
 const tones: Array<{ value: CoachTone; label: string; helper: string }> = [
   { value: "warm-direct", label: "Warm direct", helper: "Clear and collaborative" },
@@ -64,7 +63,17 @@ const goalChoices: Array<{ value: CommunicationGoal; label: string }> = [
 const ageRanges: AgeRange[] = ["under-13", "13-15", "16-17", "18-plus"];
 const allowLocalDemoFallback = process.env.EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK === "true";
 
-export function CoachScreen() {
+export function CoachScreen({
+  accountEmail,
+  authMode = "signed-in",
+  getAccessToken,
+  onSignOut
+}: {
+  accountEmail?: string;
+  authMode?: "demo" | "signed-in";
+  getAccessToken?: () => Promise<string | undefined> | string | undefined;
+  onSignOut?: () => Promise<void> | void;
+}) {
   const [inputText, setInputText] = useState(
     "I guess it is okay if you keep changing the deadline, but it is making my week hard."
   );
@@ -139,17 +148,12 @@ export function CoachScreen() {
   const bodyStyle = typeScale === "standard" ? null : styles.readableTextLarge;
 
   const apiClient = useMemo(() => {
-    const supabase = getSupabaseMobileClient();
-
     return createAssertiveCoachClient({
       baseUrl: process.env.EXPO_PUBLIC_API_URL,
       allowLocalDemoFallback,
-      getAccessToken: async () => {
-        const session = await supabase?.auth.getSession();
-        return session?.data.session?.access_token;
-      }
+      getAccessToken
     });
-  }, []);
+  }, [getAccessToken]);
 
   function toggleGoal(value: CommunicationGoal) {
     setSelectedGoals((current) =>
@@ -296,13 +300,15 @@ export function CoachScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.brandRow}>
           <View style={styles.brandMark}>
-            <Text style={styles.brandMarkText}>AC</Text>
+            <Text style={styles.brandMarkText}>SA</Text>
           </View>
           <View style={styles.brandText}>
             <Text style={styles.brandName}>SpeakAble</Text>
             <Text style={styles.brandCaption}>Clear, kind, firm</Text>
           </View>
         </View>
+
+        <AccountPanel accountEmail={accountEmail} authMode={authMode} onSignOut={onSignOut} />
 
         <View style={styles.hero}>
           <Text style={[styles.screenTitle, headingStyle]}>Practice saying it clearly.</Text>
@@ -590,6 +596,30 @@ export function CoachScreen() {
   );
 }
 
+function AccountPanel({
+  accountEmail,
+  authMode,
+  onSignOut
+}: {
+  accountEmail?: string;
+  authMode: "demo" | "signed-in";
+  onSignOut?: () => Promise<void> | void;
+}) {
+  return (
+    <View style={styles.accountPanel} accessibilityLabel="Account">
+      <View style={styles.accountTextBlock}>
+        <Text style={styles.accountLabel}>{authMode === "demo" ? "Demo mode" : "Signed in"}</Text>
+        <Text style={styles.accountEmail}>{accountEmail ?? "Private session"}</Text>
+      </View>
+      {onSignOut ? (
+        <Pressable accessibilityRole="button" style={styles.signOutButton} onPress={() => void onSignOut()}>
+          <Text style={styles.signOutText}>Sign out</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
 function Panel({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "safety" }) {
   return <View style={[styles.panel, tone === "safety" && styles.safetyPanel]}>{children}</View>;
 }
@@ -782,6 +812,44 @@ const styles = StyleSheet.create({
     color: colors.mutedText,
     fontSize: sharedTypeScale.small,
     marginTop: 2
+  },
+  accountPanel: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    padding: spacing.md
+  },
+  accountTextBlock: {
+    flex: 1
+  },
+  accountLabel: {
+    color: colors.mutedText,
+    fontSize: sharedTypeScale.label,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  accountEmail: {
+    color: colors.text,
+    fontSize: sharedTypeScale.small,
+    fontWeight: "800",
+    marginTop: 3
+  },
+  signOutButton: {
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  signOutText: {
+    color: colors.accentDark,
+    fontSize: sharedTypeScale.small,
+    fontWeight: "800"
   },
   hero: {
     gap: spacing.md

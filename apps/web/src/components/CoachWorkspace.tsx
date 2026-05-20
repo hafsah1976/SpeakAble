@@ -10,6 +10,7 @@ import {
   Flag,
   Gauge,
   LifeBuoy,
+  LogOut,
   MessageSquareText,
   MicOff,
   PauseCircle,
@@ -40,7 +41,6 @@ import {
   type Relationship,
   type RolePlayResponse
 } from "@speakable/types";
-import { getSupabaseBrowserClient } from "../lib/supabase";
 
 const tones: Array<{ value: CoachTone; label: string; helper: string }> = [
   { value: "warm-direct", label: "Warm direct", helper: "Clear and collaborative" },
@@ -71,7 +71,17 @@ const goals: Array<{ value: CommunicationGoal; label: string }> = [
 const allowLocalDemoFallback =
   process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK !== "false";
 
-export function CoachWorkspace() {
+export function CoachWorkspace({
+  accountEmail,
+  authMode = "signed-in",
+  getAccessToken,
+  onSignOut
+}: {
+  accountEmail?: string;
+  authMode?: "demo" | "signed-in";
+  getAccessToken?: () => Promise<string | undefined> | string | undefined;
+  onSignOut?: () => Promise<void> | void;
+}) {
   const [inputText, setInputText] = useState(
     "I guess it is okay if you keep changing the deadline, but it is making my week hard."
   );
@@ -142,17 +152,12 @@ export function CoachWorkspace() {
   );
 
   const apiClient = useMemo(() => {
-    const supabase = getSupabaseBrowserClient();
-
     return createAssertiveCoachClient({
       baseUrl: process.env.NEXT_PUBLIC_API_URL,
       allowLocalDemoFallback,
-      getAccessToken: async () => {
-        const session = await supabase?.auth.getSession();
-        return session?.data.session?.access_token;
-      }
+      getAccessToken
     });
-  }, []);
+  }, [getAccessToken]);
 
   function toggleGoal(value: CommunicationGoal) {
     setSelectedGoals((current) =>
@@ -300,13 +305,15 @@ export function CoachWorkspace() {
       <aside className="nav-rail" aria-label="Primary">
         <div className="brand-lockup">
           <div className="brand-mark" aria-hidden="true">
-            AC
+            SA
           </div>
           <div>
             <p className="brand-name">SpeakAble</p>
             <p className="brand-caption">Clear, kind, firm</p>
           </div>
         </div>
+
+        <AccountPanel accountEmail={accountEmail} authMode={authMode} onSignOut={onSignOut} />
 
         <nav className="nav-list">
           <a className="nav-item active" href="#coach">
@@ -746,6 +753,31 @@ function Metric({ label, value }: { label: string; value: number }) {
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
+  );
+}
+
+function AccountPanel({
+  accountEmail,
+  authMode,
+  onSignOut
+}: {
+  accountEmail?: string;
+  authMode: "demo" | "signed-in";
+  onSignOut?: () => Promise<void> | void;
+}) {
+  return (
+    <section className="account-panel" aria-label="Account">
+      <div>
+        <span>{authMode === "demo" ? "Demo mode" : "Signed in"}</span>
+        <strong>{accountEmail ?? "Private session"}</strong>
+      </div>
+      {onSignOut ? (
+        <button className="mini-action" type="button" onClick={() => void onSignOut()}>
+          <LogOut size={15} aria-hidden="true" />
+          Sign out
+        </button>
+      ) : null}
+    </section>
   );
 }
 
