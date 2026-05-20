@@ -1,0 +1,28 @@
+{
+  "ServiceName": "speakable-api",
+  "SourceConfiguration": {
+    "ImageRepository": {
+      "ImageIdentifier": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/speakable-api:latest",
+      "ImageRepositoryType": "ECR",
+      "ImageConfiguration": {
+        "Port": "8000",
+        "RuntimeEnvironmentVariables": {
+          "APP_ENV": "production",
+          "AUTH_PROVIDER": "cognito",
+          "REQUIRE_AUTH": "true",
+          "VOICE_ROLE_PLAY_ENABLED": "false",
+          "EXTERNAL_SHARING_ENABLED": "false"
+        }
+      }
+    },
+    "AutoDeploymentsEnabled": true
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/health",
+    "Interval": 10,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 5
+  }
+}

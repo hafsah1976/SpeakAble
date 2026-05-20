@@ -54,11 +54,11 @@ Run the mobile app:
 npm run dev:mobile
 ```
 
-Run local Supabase migrations and seed data:
+Run AWS RDS/Postgres migrations and seed data after `DATABASE_URL` is set:
 
 ```bash
-supabase start
-supabase db reset
+npm run db:migrate
+npm run db:seed
 ```
 
 Generate OpenAPI docs:
@@ -118,6 +118,6 @@ npm run build
 - Keep voice role-play behind `VOICE_ROLE_PLAY_ENABLED`.
 - Keep external sharing behind `EXTERNAL_SHARING_ENABLED`.
 - Keep local demo fallback disabled in production; use `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=true` only for development without an API.
-- Store Expo/Supabase mobile auth sessions through `expo-secure-store`.
-- Treat Supabase RLS as a production boundary; API checks are defense in depth.
+- Store Expo/AWS Cognito mobile auth sessions through secure device storage.
+- Treat Postgres RLS as a production boundary; API checks are defense in depth.
 - If `npm` is blocked by PowerShell execution policy, use `npm.cmd`.

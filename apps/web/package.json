@@ -14,7 +14,7 @@
   "dependencies": {
     "@speakable/types": "0.1.0",
     "@speakable/ui": "0.1.0",
-    "@supabase/supabase-js": "2.106.0",
+    "aws-amplify": "^6.17.0",
     "lucide-react": "1.16.0",
     "next": "16.2.6",
     "react": "19.2.6",

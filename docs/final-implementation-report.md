@@ -2,57 +2,54 @@
 
 ## Delivered
 
-- Scaffolded the SpeakAble monorepo with Next.js web, Expo mobile, FastAPI API, shared TypeScript contracts, shared UI tokens, Supabase migrations, seed data, CI, and deployment templates.
-- Aligned internal package names, deployment labels, and user-facing branding around SpeakAble.
+- Scaffolded the SpeakAble monorepo with Next.js web, Expo mobile, FastAPI API, shared TypeScript contracts, shared UI tokens, AWS RDS/Postgres migrations, seed data, CI, and deployment templates.
+- Aligned package names, deployment labels, and user-facing branding around SpeakAble.
 - Added planning artifacts for system architecture, repo structure, database schema, API contract, testing/deployment, and privacy/safety/moderation risk.
 - Implemented onboarding, baseline assessment, lessons, text role-play, structured feedback scoring, progress, recommendations, moderation reports, and privacy export/delete flows.
-- Added visible Supabase Auth flows for web and mobile: sign up, sign in, sign out, session detection, protected workspace state, and explicit development-demo state.
+- Added AWS Cognito auth flows for web and mobile: sign up, confirm sign-up, sign in, sign out, session detection, protected workspace state, and explicit development-demo state.
+- Added FastAPI Cognito JWT verification through Cognito JWKS.
+- Added Postgres persistence for authenticated production paths through `DATABASE_URL`.
 - Kept coaching business logic in reusable API and shared package services rather than UI-only implementations.
 - Added a `CoachModelProvider` interface so deterministic local coaching can later be replaced with another model vendor without changing route contracts.
 - Enforced structured feedback output schemas and pre-display moderation checks for user input and generated output.
-- Made local demo fallback explicit and development-only through public environment flags.
-- Stored mobile Supabase session tokens through `expo-secure-store`.
+- Stored mobile Cognito tokens through SecureStore-backed Amplify token storage.
 - Added feature flags for voice role-play and external sharing.
 
 ## Verification
 
-Verified from the repository root on 2026-05-20:
+Verified locally after the AWS pivot on 2026-05-20:
 
 ```bash
 npm run lint                                # passed
 npm run typecheck                           # passed
-npm run test:unit                           # passed, 5 API unit tests
-npm run test:integration                    # passed, 8 API route tests
-npm test                                    # passed, 13 API tests
+npm run test:unit                           # passed, 8 API unit tests
+npm run test:integration                    # passed, 9 API route tests
+npm test                                    # passed, 17 API tests
 npm run build                               # passed
 npm run test:e2e                            # passed, 1 core Playwright flow
 npm run openapi                             # regenerated docs/openapi.json
 npm audit --omit=dev --audit-level=high     # passed high-severity gate
 ```
 
-GitHub Actions on `main`:
-
-- `CI` passed after the SpeakAble package-scope alignment.
-- `Deploy` passed after pinning the Expo GitHub Action wrapper to `expo/expo-github-action@v8`.
-
-Local browser smoke verified the web app after startup: heading, primary action, account/demo state, and development demo status were visible.
-
-Supabase migrations are mirrored in `database/migrations` and `supabase/migrations` with no diff. `npx supabase db reset` could not run here because Docker Desktop is not available; rerun it on a machine with Docker before launch. The npm audit still reports moderate advisories in Next's nested PostCSS dependency, with only a breaking forced downgrade offered by npm at the time of verification.
+Browser smoke on `localhost:3003` verified the SpeakAble heading, AWS/demo auth
+state, and onboarding action. RDS migrations were not applied locally because
+Docker Desktop/Postgres was not running in this environment.
 
 ## Remaining Risks
 
-- The API currently uses deterministic coaching logic; before enabling external LLMs, add provider-specific redaction, vendor retention review, rate limits, and production telemetry.
+- Real AWS resources are not created by code alone; Cognito, RDS, ECR, App Runner, Vercel, and EAS secrets must be configured before the app is fully live.
 - RLS policies are implemented in SQL, but automated disposable-database policy tests should be added before launch.
-- Privacy export/delete endpoints return descriptors in this scaffold; production should wire them to Supabase storage, background jobs, and deletion verification.
+- Privacy export/delete endpoints return descriptors in this scaffold; production should wire them to S3 exports, background jobs, and deletion verification.
 - Moderation is rule-based in this slice; production should add calibrated classifier coverage and reviewer tooling.
+- The API currently uses deterministic coaching logic; before enabling external LLMs, add provider-specific redaction, vendor retention review, rate limits, and production telemetry.
 - Voice and external sharing are intentionally disabled until separate consent, moderation, and abuse testing are complete.
 
 ## Next Milestones
 
-1. Create/link the production Supabase project, apply migrations, and configure auth redirect URLs.
-2. Add production secrets for Supabase, Render, Vercel, and Expo/EAS.
-3. Wire FastAPI persistence to Supabase for authenticated users.
-4. Add automated RLS tests using local Supabase in CI.
+1. Create the production AWS Cognito user pool and app client.
+2. Create the production AWS RDS PostgreSQL database and apply migrations.
+3. Configure GitHub secrets for Vercel, AWS App Runner/ECR/RDS, and Expo/EAS.
+4. Add automated RLS tests using disposable Postgres in CI.
 5. Add provider implementation for the selected LLM with JSON schema validation and output moderation.
 6. Add rate limiting, audit event persistence, and structured redacted logging.
 7. Run accessibility QA on web and mobile with real devices and assistive tech.

@@ -1,6 +1,10 @@
 # SpeakAble
 
-SpeakAble is a greenfield coaching app for people who want to express needs, boundaries, and feedback with clarity and warmth. The first production slice includes a Next.js web app, an Expo mobile app, a FastAPI service, shared TypeScript types, shared design tokens, Supabase Postgres schema with RLS, and CI/deployment scaffolding.
+SpeakAble is a greenfield coaching app for people who want to express needs,
+boundaries, and feedback with clarity and warmth. The production slice includes
+a Next.js web app, an Expo mobile app, a FastAPI service, shared TypeScript
+contracts, shared design tokens, AWS Cognito auth, AWS RDS PostgreSQL with RLS
+and `pgvector`, and CI/CD scaffolding.
 
 ## Monorepo
 
@@ -14,38 +18,45 @@ packages/
 services/
   api/             FastAPI coaching and moderation API
 database/
-  migrations/      Supabase SQL migrations and RLS policies
+  migrations/      AWS RDS/Postgres SQL migrations and RLS policies
+  scripts/         Cross-platform migration runner
 infra/
-  render/          Example API deployment config
+  aws/             Cognito, RDS, and App Runner deployment notes
 .github/
-  workflows/       CI
+  workflows/       CI and deployment automation
 docs/              Architecture, schema, API, test, deployment, and risk plans
 ```
 
 ## Quick Start
 
 ```bash
-npm install
-python -m pip install -e services/api[dev]
-npm run dev:web
+npm ci
+python -m pip install -e "services/api[dev]"
+npx playwright install chromium
 npm run dev:api
+npm run dev:web
 ```
 
-PowerShell users may need `npm.cmd` instead of `npm` if script execution policy blocks `npm.ps1`.
+PowerShell users may need `npm.cmd` instead of `npm` if script execution policy
+blocks `npm.ps1`.
 
 ## Environment
 
-Copy `.env.example` to the environment files used by each app:
+Copy the templates before running production-like flows:
 
 - `apps/web/.env.local`
 - `apps/mobile/.env`
 - `services/api/.env`
+- `database/.env`
 
-Supabase Auth is the shared identity provider for web, mobile, and API authorization. The local app can render without Supabase keys, but production should set every required variable and enable `REQUIRE_AUTH=true` for the API.
+AWS Cognito is the shared identity provider for web, mobile, and API
+authorization. Local development can render without Cognito keys through the
+explicit demo fallback, but production should set Cognito variables, set
+`REQUIRE_AUTH=true`, and set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 
-Local demo fallback is explicitly development-only. Keep `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` in production, leave `EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` unless testing mobile without an API, and set `EXTERNAL_SHARING_ENABLED=false` until the sharing workflow has a moderation review.
-
-The web and mobile apps include visible sign-up, sign-in, sign-out, and protected-session states. If Supabase public keys are missing, web can still run in development demo mode; production waits for Supabase credentials instead of silently using mock auth.
+The mobile app stores Cognito tokens through a SecureStore-backed Amplify token
+storage adapter. Keep `VOICE_ROLE_PLAY_ENABLED=false` and
+`EXTERNAL_SHARING_ENABLED=false` until those flows pass safety review.
 
 ## Local Setup
 
@@ -56,6 +67,7 @@ npx playwright install chromium
 cp apps/web/.env.example apps/web/.env.local
 cp apps/mobile/.env.example apps/mobile/.env
 cp services/api/.env.example services/api/.env
+cp database/.env.example database/.env
 ```
 
 Start local services:
@@ -66,22 +78,22 @@ npm run dev:web
 npm run dev:mobile
 ```
 
-Run Supabase locally:
+Run database migrations after `DATABASE_URL` points to a local or AWS RDS
+Postgres database:
 
 ```bash
-supabase start
-supabase db reset
+npm run db:migrate
+npm run db:seed
 ```
 
-Supabase-compatible migrations live in `supabase/migrations`; the same migration is also kept under `database/migrations` with the broader database planning artifacts.
-
-The seed script creates demo scenarios, lessons, recommendations, reports, and demo auth users:
+Demo Cognito users should be created separately with these emails for end-to-end
+auth testing:
 
 - `alex@example.test`
 - `sam@example.test`
 - `moderator@example.test`
 
-All demo passwords are `Password123!`.
+Use `Password123!` for local demo accounts only.
 
 ## Quality Gates
 
@@ -97,48 +109,53 @@ npm run openapi
 
 ## Production Deployment
 
-GitHub Actions is configured with two workflows:
+GitHub Actions has two workflows:
 
-- `CI` runs linting, typechecking, unit tests, integration tests, Playwright e2e tests, build, and OpenAPI drift checks.
-- `Deploy` runs Vercel, Render, Supabase, and EAS deployment jobs. Jobs skip cleanly until their provider secrets are configured.
+- `CI` runs linting, typechecking, unit tests, integration tests, Playwright e2e
+  tests, web build, and OpenAPI drift checks.
+- `Deploy` runs Vercel web deploy, AWS App Runner API deploy, AWS RDS migrations,
+  and EAS mobile builds. Jobs skip cleanly until matching secrets are configured.
 
-The mobile deployment job intentionally uses `expo/expo-github-action@v8`, which is the current resolvable Expo GitHub Action wrapper. It still installs the latest EAS CLI through `eas-version: latest`.
-
-Required GitHub repository secrets for full production deployment:
+Required GitHub repository secrets for full deployment:
 
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-- `RENDER_DEPLOY_HOOK_URL`
-- `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+- `AWS_ECR_REPOSITORY`, `AWS_APP_RUNNER_SERVICE_ARN`, `AWS_DATABASE_URL`
 - `EXPO_TOKEN`
-- Optional: `EAS_SUBMIT_ON_DEPLOY=true` to submit mobile builds after EAS production builds start.
+- Optional: `EAS_SUBMIT_ON_DEPLOY=true`
 
 Web on Vercel:
 
 1. Create a Vercel project rooted at the repository root.
 2. Set the build command to `npm --workspace @speakable/web run build`.
 3. Set the output directory to `apps/web/.next`.
-4. Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_API_URL`.
-5. Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false` for production.
+4. Configure `NEXT_PUBLIC_AWS_REGION`,
+   `NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID`,
+   `NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID`, and `NEXT_PUBLIC_API_URL`.
+5. Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 
-API on Render:
+API on AWS App Runner:
 
-1. Use `infra/render/render.yaml`.
-2. Set `REQUIRE_AUTH=true`.
-3. Configure `API_CORS_ORIGINS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VOICE_ROLE_PLAY_ENABLED=false`, and `EXTERNAL_SHARING_ENABLED=false`.
-4. Deploy with the Dockerfile at `services/api/Dockerfile`.
+1. Create an ECR repository and an App Runner service for `services/api/Dockerfile`.
+2. Configure API env vars from `services/api/.env.example`.
+3. Set `REQUIRE_AUTH=true`, `AUTH_PROVIDER=cognito`, and `DATABASE_URL`.
+4. Push to `main` or run the `Deploy` workflow.
 
-Supabase:
+AWS RDS Postgres:
 
-1. Link the project with `supabase link --project-ref <project-ref>`.
-2. Apply migrations with `supabase db push`.
-3. For non-production demo data, run `database/seed.sql` against the target database intentionally.
-4. Push config with `supabase config push` after reviewing auth redirect URLs.
+1. Create an RDS PostgreSQL instance.
+2. Ensure `pgcrypto` and `pgvector` can be enabled.
+3. Set `AWS_DATABASE_URL` as a GitHub secret and `DATABASE_URL` locally.
+4. Run `npm run db:migrate`.
+5. Run `npm run db:seed` only for demo/non-production environments.
 
 Mobile with EAS:
 
 1. Configure `apps/mobile/eas.json`.
-2. Set Expo secrets for `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_API_URL`.
-3. Set `EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`; Supabase mobile sessions are stored through `expo-secure-store`.
+2. Set Expo secrets for `EXPO_PUBLIC_AWS_REGION`,
+   `EXPO_PUBLIC_AWS_COGNITO_USER_POOL_ID`,
+   `EXPO_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID`, and `EXPO_PUBLIC_API_URL`.
+3. Set `EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 4. Build with `eas build --platform all --profile production`.
 5. Submit with `eas submit --platform all --profile production`.
 

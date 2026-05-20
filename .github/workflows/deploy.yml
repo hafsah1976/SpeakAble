@@ -31,38 +31,59 @@ jobs:
       - run: echo "Skipping Vercel deploy because Vercel secrets are not configured."
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
 
-  deploy-api-render:
+  deploy-api-aws:
     runs-on: ubuntu-latest
     env:
-      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-    steps:
-      - name: Trigger Render deploy hook
-        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
-        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
-      - run: echo "Skipping Render deploy because RENDER_DEPLOY_HOOK_URL is not configured."
-        if: ${{ env.RENDER_DEPLOY_HOOK_URL == '' }}
-
-  deploy-supabase:
-    runs-on: ubuntu-latest
-    env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+      AWS_APP_RUNNER_SERVICE_ARN: ${{ secrets.AWS_APP_RUNNER_SERVICE_ARN }}
     steps:
       - uses: actions/checkout@v5
-        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
-      - uses: supabase/setup-cli@v1
-        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' && env.AWS_REGION != '' && env.AWS_ECR_REPOSITORY != '' && env.AWS_APP_RUNNER_SERVICE_ARN != '' }}
+      - uses: aws-actions/configure-aws-credentials@v5
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' && env.AWS_REGION != '' && env.AWS_ECR_REPOSITORY != '' && env.AWS_APP_RUNNER_SERVICE_ARN != '' }}
         with:
-          version: latest
-      - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
-        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
-      - run: supabase db push
-        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
-      - run: supabase config push
-        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
-      - run: echo "Skipping Supabase deploy because Supabase secrets are not configured."
-        if: ${{ env.SUPABASE_ACCESS_TOKEN == '' || env.SUPABASE_PROJECT_REF == '' || env.SUPABASE_DB_PASSWORD == '' }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' && env.AWS_REGION != '' && env.AWS_ECR_REPOSITORY != '' && env.AWS_APP_RUNNER_SERVICE_ARN != '' }}
+      - name: Build and push API image
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' && env.AWS_REGION != '' && env.AWS_ECR_REPOSITORY != '' && env.AWS_APP_RUNNER_SERVICE_ARN != '' }}
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          IMAGE="$ECR_REGISTRY/$AWS_ECR_REPOSITORY:latest"
+          SHA_IMAGE="$ECR_REGISTRY/$AWS_ECR_REPOSITORY:$GITHUB_SHA"
+          docker build -f services/api/Dockerfile -t "$IMAGE" -t "$SHA_IMAGE" .
+          docker push "$IMAGE"
+          docker push "$SHA_IMAGE"
+      - name: Start App Runner deployment
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' && env.AWS_REGION != '' && env.AWS_ECR_REPOSITORY != '' && env.AWS_APP_RUNNER_SERVICE_ARN != '' }}
+        run: aws apprunner start-deployment --service-arn "$AWS_APP_RUNNER_SERVICE_ARN"
+      - run: echo "Skipping AWS API deploy because AWS secrets are not configured."
+        if: ${{ env.AWS_ACCESS_KEY_ID == '' || env.AWS_SECRET_ACCESS_KEY == '' || env.AWS_REGION == '' || env.AWS_ECR_REPOSITORY == '' || env.AWS_APP_RUNNER_SERVICE_ARN == '' }}
+
+  deploy-database-rds:
+    runs-on: ubuntu-latest
+    env:
+      AWS_DATABASE_URL: ${{ secrets.AWS_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v5
+        if: ${{ env.AWS_DATABASE_URL != '' }}
+      - uses: actions/setup-python@v6
+        if: ${{ env.AWS_DATABASE_URL != '' }}
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "psycopg[binary]==3.2.13"
+        if: ${{ env.AWS_DATABASE_URL != '' }}
+      - run: DATABASE_URL="$AWS_DATABASE_URL" python database/scripts/apply_sql.py database/migrations/0001_initial_schema.sql
+        if: ${{ env.AWS_DATABASE_URL != '' }}
+      - run: echo "Skipping RDS migrations because AWS_DATABASE_URL is not configured."
+        if: ${{ env.AWS_DATABASE_URL == '' }}
 
   eas-build-submit:
     runs-on: ubuntu-latest

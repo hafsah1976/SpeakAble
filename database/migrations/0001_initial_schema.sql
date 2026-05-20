@@ -7,8 +7,16 @@ create type public.report_status as enum ('open', 'triaged', 'resolved', 'dismis
 create type public.practice_difficulty as enum ('starter', 'steady', 'stretch');
 create type public.privacy_request_status as enum ('queued', 'processing', 'completed', 'cancelled');
 
+create table public.app_users (
+  id uuid primary key,
+  email text,
+  role public.app_role not null default 'member',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
+  id uuid primary key references public.app_users(id) on delete cascade,
   display_name text,
   role public.app_role not null default 'member',
   communication_goal text,
@@ -31,7 +39,7 @@ create table public.profiles (
 
 create table public.coach_sessions (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   title text not null default 'Untitled practice',
   relationship text not null,
   tone text not null,
@@ -44,7 +52,7 @@ create table public.coach_sessions (
 create table public.coach_messages (
   id uuid primary key default gen_random_uuid(),
   session_id uuid not null references public.coach_sessions(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   input_text text,
   rewritten_text text,
   coaching_notes jsonb not null default '[]'::jsonb,
@@ -81,7 +89,7 @@ create table public.lessons (
 
 create table public.lesson_progress (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   lesson_id text not null references public.lessons(id) on delete cascade,
   status text not null default 'not_started' check (status in ('not_started', 'in_progress', 'completed')),
   completed_at timestamptz,
@@ -92,7 +100,7 @@ create table public.lesson_progress (
 
 create table public.communication_assessments (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   answers jsonb not null,
   style text not null,
   score jsonb not null,
@@ -102,7 +110,7 @@ create table public.communication_assessments (
 
 create table public.practice_attempts (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   scenario_id uuid references public.practice_scenarios(id) on delete set null,
   draft_text text,
   score jsonb not null default '{}'::jsonb,
@@ -112,7 +120,7 @@ create table public.practice_attempts (
 
 create table public.role_play_sessions (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   scenario_id uuid references public.practice_scenarios(id) on delete set null,
   mode text not null default 'text' check (mode in ('text', 'voice')),
   voice_enabled boolean not null default false,
@@ -123,7 +131,7 @@ create table public.role_play_sessions (
 create table public.role_play_turns (
   id uuid primary key default gen_random_uuid(),
   session_id uuid not null references public.role_play_sessions(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   user_message text,
   coach_reply text,
   captions text[] not null default '{}',
@@ -134,7 +142,7 @@ create table public.role_play_turns (
 
 create table public.feedback_scores (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   subject_type text not null,
   subject_id uuid not null,
   clarity int not null check (clarity between 0 and 100),
@@ -148,7 +156,7 @@ create table public.feedback_scores (
 
 create table public.user_recommendations (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   title text not null,
   reason text not null,
   action text not null,
@@ -159,7 +167,7 @@ create table public.user_recommendations (
 
 create table public.analytics_events (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete set null,
+  user_id uuid references public.app_users(id) on delete set null,
   name text not null,
   source text not null check (source in ('web', 'mobile', 'api')),
   properties jsonb not null default '{}'::jsonb,
@@ -180,13 +188,13 @@ create table public.analytics_events (
 
 create table public.moderation_reports (
   id uuid primary key default gen_random_uuid(),
-  reporter_id uuid references auth.users(id) on delete set null,
+  reporter_id uuid references public.app_users(id) on delete set null,
   subject_type text not null,
   subject_id uuid,
   reason text not null,
   details text,
   status public.report_status not null default 'open',
-  reviewer_id uuid references auth.users(id) on delete set null,
+  reviewer_id uuid references public.app_users(id) on delete set null,
   reviewer_notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -194,7 +202,7 @@ create table public.moderation_reports (
 
 create table public.privacy_requests (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.app_users(id) on delete cascade,
   request_type text not null check (request_type in ('export', 'delete')),
   status public.privacy_request_status not null default 'queued',
   requested_payload jsonb not null default '{}'::jsonb,
@@ -207,7 +215,7 @@ create table public.privacy_requests (
 
 create table public.audit_logs (
   id uuid primary key default gen_random_uuid(),
-  actor_id uuid references auth.users(id) on delete set null,
+  actor_id uuid references public.app_users(id) on delete set null,
   action text not null,
   target_type text not null,
   target_id uuid,
@@ -281,23 +289,28 @@ create trigger privacy_requests_set_updated_at
   before update on public.privacy_requests
   for each row execute function public.set_updated_at();
 
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
+create trigger app_users_set_updated_at
+  before update on public.app_users
+  for each row execute function public.set_updated_at();
+
+create or replace function public.current_user_id()
+returns uuid
+language sql
+stable
 as $$
-begin
-  insert into public.profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)))
-  on conflict (id) do nothing;
-  return new;
-end;
+  select nullif(current_setting('app.current_user_id', true), '')::uuid;
 $$;
 
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+create or replace function public.current_user_role()
+returns public.app_role
+language sql
+stable
+as $$
+  select coalesce(
+    nullif(current_setting('app.current_user_role', true), '')::public.app_role,
+    'member'::public.app_role
+  );
+$$;
 
 create or replace function public.is_moderator()
 returns boolean
@@ -309,9 +322,9 @@ as $$
   select exists (
     select 1
     from public.profiles
-    where id = auth.uid()
+    where id = public.current_user_id()
       and role in ('moderator', 'admin')
-  );
+  ) or public.current_user_role() in ('moderator', 'admin');
 $$;
 
 create or replace function public.is_admin()
@@ -324,9 +337,9 @@ as $$
   select exists (
     select 1
     from public.profiles
-    where id = auth.uid()
+    where id = public.current_user_id()
       and role = 'admin'
-  );
+  ) or public.current_user_role() = 'admin';
 $$;
 
 create or replace function public.prevent_profile_role_change()
@@ -348,6 +361,7 @@ create trigger profiles_prevent_role_change
   before update on public.profiles
   for each row execute function public.prevent_profile_role_change();
 
+alter table public.app_users enable row level security;
 alter table public.profiles enable row level security;
 alter table public.coach_sessions enable row level security;
 alter table public.coach_messages enable row level security;
@@ -365,24 +379,41 @@ alter table public.moderation_reports enable row level security;
 alter table public.privacy_requests enable row level security;
 alter table public.audit_logs enable row level security;
 
+create policy "app_users_select_own_or_moderator"
+  on public.app_users for select
+  using (id = public.current_user_id() or public.is_moderator());
+
+create policy "app_users_insert_own"
+  on public.app_users for insert
+  with check (id = public.current_user_id());
+
+create policy "app_users_update_own"
+  on public.app_users for update
+  using (id = public.current_user_id())
+  with check (id = public.current_user_id());
+
 create policy "profiles_select_own_or_moderator"
   on public.profiles for select
-  using (id = auth.uid() or public.is_moderator());
+  using (id = public.current_user_id() or public.is_moderator());
+
+create policy "profiles_insert_own"
+  on public.profiles for insert
+  with check (id = public.current_user_id());
 
 create policy "profiles_update_own"
   on public.profiles for update
-  using (id = auth.uid())
-  with check (id = auth.uid());
+  using (id = public.current_user_id())
+  with check (id = public.current_user_id());
 
 create policy "sessions_owner_all"
   on public.coach_sessions for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "messages_owner_all"
   on public.coach_messages for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "messages_moderator_read"
   on public.coach_messages for select
@@ -390,7 +421,7 @@ create policy "messages_moderator_read"
 
 create policy "scenarios_read_authenticated"
   on public.practice_scenarios for select
-  using (auth.uid() is not null);
+  using (public.current_user_id() is not null);
 
 create policy "scenarios_admin_write"
   on public.practice_scenarios for all
@@ -399,7 +430,7 @@ create policy "scenarios_admin_write"
 
 create policy "lessons_read_authenticated"
   on public.lessons for select
-  using (auth.uid() is not null);
+  using (public.current_user_id() is not null);
 
 create policy "lessons_admin_write"
   on public.lessons for all
@@ -408,28 +439,28 @@ create policy "lessons_admin_write"
 
 create policy "lesson_progress_owner_all"
   on public.lesson_progress for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "assessments_owner_all"
   on public.communication_assessments for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "attempts_owner_all"
   on public.practice_attempts for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "role_play_sessions_owner_all"
   on public.role_play_sessions for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "role_play_turns_owner_all"
   on public.role_play_turns for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "role_play_turns_moderator_read"
   on public.role_play_turns for select
@@ -437,20 +468,20 @@ create policy "role_play_turns_moderator_read"
 
 create policy "feedback_scores_owner_read"
   on public.feedback_scores for select
-  using (user_id = auth.uid());
+  using (user_id = public.current_user_id());
 
 create policy "feedback_scores_owner_insert"
   on public.feedback_scores for insert
-  with check (user_id = auth.uid());
+  with check (user_id = public.current_user_id());
 
 create policy "recommendations_owner_all"
   on public.user_recommendations for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "analytics_insert_own"
   on public.analytics_events for insert
-  with check (user_id = auth.uid() or user_id is null);
+  with check (user_id = public.current_user_id() or user_id is null);
 
 create policy "analytics_admin_read"
   on public.analytics_events for select
@@ -458,11 +489,11 @@ create policy "analytics_admin_read"
 
 create policy "reports_create_own"
   on public.moderation_reports for insert
-  with check (reporter_id = auth.uid());
+  with check (reporter_id = public.current_user_id());
 
 create policy "reports_read_own_or_moderator"
   on public.moderation_reports for select
-  using (reporter_id = auth.uid() or public.is_moderator());
+  using (reporter_id = public.current_user_id() or public.is_moderator());
 
 create policy "reports_update_moderator"
   on public.moderation_reports for update
@@ -471,8 +502,8 @@ create policy "reports_update_moderator"
 
 create policy "privacy_requests_owner_all"
   on public.privacy_requests for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id());
 
 create policy "privacy_requests_admin_read"
   on public.privacy_requests for select

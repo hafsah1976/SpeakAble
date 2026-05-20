@@ -1,60 +1,40 @@
--- Demo seed data for local Supabase development.
+-- Demo seed data for local AWS RDS/Postgres development.
 -- Demo password for all users: Password123!
+-- Create matching Cognito users separately with the same emails for end-to-end auth testing.
 
-insert into auth.users (
+insert into public.app_users (
   id,
-  instance_id,
-  aud,
-  role,
   email,
-  encrypted_password,
-  email_confirmed_at,
-  raw_app_meta_data,
-  raw_user_meta_data,
+  role,
   created_at,
   updated_at
 )
 values
   (
     '00000000-0000-0000-0000-000000000101',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
     'alex@example.test',
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"], "role": "member"}'::jsonb,
-    '{"display_name": "Alex V."}'::jsonb,
+    'member',
     now(),
     now()
   ),
   (
     '00000000-0000-0000-0000-000000000102',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
     'sam@example.test',
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"], "role": "member"}'::jsonb,
-    '{"display_name": "Sam R."}'::jsonb,
+    'member',
     now(),
     now()
   ),
   (
     '00000000-0000-0000-0000-000000000201',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
     'moderator@example.test',
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"], "role": "moderator"}'::jsonb,
-    '{"display_name": "Morgan Moderator"}'::jsonb,
+    'moderator',
     now(),
     now()
   )
-on conflict (id) do nothing;
+on conflict (id) do update set
+  email = excluded.email,
+  role = excluded.role,
+  updated_at = now();
 
 insert into public.profiles (
   id,
