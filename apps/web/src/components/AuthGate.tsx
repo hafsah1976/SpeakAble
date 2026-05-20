@@ -15,7 +15,10 @@ import {
 import { CoachWorkspace } from "./CoachWorkspace";
 
 const allowLocalDemoFallback =
-  process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK !== "false";
+  process.env.NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO === "true" ||
+  (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK !== "false");
+const demoAccountLabel =
+  process.env.NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO === "true" ? "Submission demo" : "Development demo";
 
 type AuthMode = "sign-in" | "sign-up" | "confirm";
 
@@ -58,7 +61,7 @@ export function AuthGate() {
     if (allowLocalDemoFallback) {
       return (
         <CoachWorkspace
-          accountEmail="Development demo"
+          accountEmail={demoAccountLabel}
           authMode="demo"
           getAccessToken={getAwsAccessToken}
         />

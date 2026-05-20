@@ -53,6 +53,8 @@ AWS Cognito is the shared identity provider for web, mobile, and API
 authorization. Local development can render without Cognito keys through the
 explicit demo fallback, but production should set Cognito variables, set
 `REQUIRE_AUTH=true`, and set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
+For a time-boxed review, `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true` enables a
+clearly labeled hosted demo without pretending AWS production auth is live.
 
 The mobile app stores Cognito tokens through a SecureStore-backed Amplify token
 storage adapter. Keep `VOICE_ROLE_PLAY_ENABLED=false` and
@@ -168,3 +170,4 @@ Mobile with EAS:
 - [Testing and Deployment](docs/05-testing-deployment.md)
 - [Risk Register](docs/06-risk-register.md)
 - [Final Implementation Report](docs/final-implementation-report.md)
+- [Submission Checklist](SUBMISSION.md)

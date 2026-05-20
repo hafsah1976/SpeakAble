@@ -69,7 +69,12 @@ const goals: Array<{ value: CommunicationGoal; label: string }> = [
 ];
 
 const allowLocalDemoFallback =
-  process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK !== "false";
+  process.env.NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO === "true" ||
+  (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK !== "false");
+const demoStatus =
+  process.env.NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO === "true"
+    ? "Submission demo draft"
+    : "Development demo draft";
 
 export function CoachWorkspace({
   accountEmail,
@@ -148,7 +153,7 @@ export function CoachWorkspace({
   }));
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState(
-    allowLocalDemoFallback ? "Development demo draft" : "Private draft"
+    allowLocalDemoFallback ? demoStatus : "Private draft"
   );
 
   const apiClient = useMemo(() => {

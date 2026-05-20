@@ -13,7 +13,11 @@ import {
 } from "../lib/awsAuth";
 import { CoachScreen } from "./CoachScreen";
 
-const allowLocalDemoFallback = process.env.EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK === "true";
+const allowLocalDemoFallback =
+  process.env.EXPO_PUBLIC_ENABLE_SUBMISSION_DEMO === "true" ||
+  process.env.EXPO_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK === "true";
+const demoAccountLabel =
+  process.env.EXPO_PUBLIC_ENABLE_SUBMISSION_DEMO === "true" ? "Submission demo" : "Development demo";
 
 type AuthMode = "sign-in" | "sign-up" | "confirm";
 
@@ -54,7 +58,7 @@ export function AuthGate() {
 
   if (!authConfigured) {
     if (allowLocalDemoFallback) {
-      return <CoachScreen accountEmail="Development demo" authMode="demo" getAccessToken={getAwsAccessToken} />;
+      return <CoachScreen accountEmail={demoAccountLabel} authMode="demo" getAccessToken={getAwsAccessToken} />;
     }
 
     return (
