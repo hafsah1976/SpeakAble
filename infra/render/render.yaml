@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: assertive-coach-api
+    env: docker
+    plan: starter
+    dockerfilePath: services/api/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: REQUIRE_AUTH
+        value: "true"
+      - key: API_CORS_ORIGINS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

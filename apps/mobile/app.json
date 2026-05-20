@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "SpeakAble",
+    "slug": "speakable",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "speakable",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.speakable.app"
+    },
+    "android": {
+      "package": "com.speakable.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

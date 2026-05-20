@@ -1,0 +1,32 @@
+{
+  "name": "assertive-coach",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace @assertive-coach/web run dev",
+    "dev:mobile": "npm --workspace @assertive-coach/mobile run start",
+    "dev:api": "cd services/api && python -m uvicorn app.main:app --reload --port 8000",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && cd services/api && python -m pytest",
+    "test:unit": "cd services/api && python -m pytest tests/unit",
+    "test:integration": "cd services/api && python -m pytest tests/test_api.py",
+    "test:e2e": "npm --workspace @assertive-coach/web run e2e",
+    "openapi": "python services/api/scripts/export_openapi.py docs/openapi.json",
+    "db:seed": "supabase db reset"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=10"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "playwright": "1.60.0",
+    "typescript": "6.0.3"
+  }
+}

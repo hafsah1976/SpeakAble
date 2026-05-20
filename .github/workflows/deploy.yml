@@ -1,0 +1,92 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-web-vercel:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+      - uses: actions/setup-node@v5
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+      - run: npx vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+      - run: npx vercel build --prod --token "$VERCEL_TOKEN"
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+      - run: npx vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+      - run: echo "Skipping Vercel deploy because Vercel secrets are not configured."
+        if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
+
+  deploy-api-render:
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+      - run: echo "Skipping Render deploy because RENDER_DEPLOY_HOOK_URL is not configured."
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL == '' }}
+
+  deploy-supabase:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+      - uses: supabase/setup-cli@v1
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+        with:
+          version: latest
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+      - run: supabase db push
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+      - run: supabase config push
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_PROJECT_REF != '' && env.SUPABASE_DB_PASSWORD != '' }}
+      - run: echo "Skipping Supabase deploy because Supabase secrets are not configured."
+        if: ${{ env.SUPABASE_ACCESS_TOKEN == '' || env.SUPABASE_PROJECT_REF == '' || env.SUPABASE_DB_PASSWORD == '' }}
+
+  eas-build-submit:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_SUBMIT_ON_DEPLOY: ${{ secrets.EAS_SUBMIT_ON_DEPLOY }}
+    steps:
+      - uses: actions/checkout@v5
+        if: ${{ env.EXPO_TOKEN != '' }}
+      - uses: actions/setup-node@v5
+        if: ${{ env.EXPO_TOKEN != '' }}
+        with:
+          node-version: 24
+          cache: npm
+      - uses: expo/expo-github-action@v9
+        if: ${{ env.EXPO_TOKEN != '' }}
+        with:
+          eas-version: latest
+          token: ${{ env.EXPO_TOKEN }}
+      - run: npm ci
+        if: ${{ env.EXPO_TOKEN != '' }}
+      - run: cd apps/mobile && eas build --platform all --profile production --non-interactive --no-wait
+        if: ${{ env.EXPO_TOKEN != '' }}
+      - run: cd apps/mobile && eas submit --platform all --profile production --non-interactive
+        if: ${{ env.EXPO_TOKEN != '' && env.EAS_SUBMIT_ON_DEPLOY == 'true' }}
+      - run: echo "Skipping EAS deploy because EXPO_TOKEN is not configured."
+        if: ${{ env.EXPO_TOKEN == '' }}

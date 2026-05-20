@@ -1,0 +1,2142 @@
+{
+  "components": {
+    "schemas": {
+      "AccessibilityPreferences": {
+        "properties": {
+          "adjustableType": {
+            "enum": [
+              "standard",
+              "large",
+              "extra-large"
+            ],
+            "title": "Adjustabletype",
+            "type": "string"
+          },
+          "captions": {
+            "title": "Captions",
+            "type": "boolean"
+          },
+          "reducedMotion": {
+            "title": "Reducedmotion",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "captions",
+          "reducedMotion",
+          "adjustableType"
+        ],
+        "title": "AccessibilityPreferences",
+        "type": "object"
+      },
+      "AnalyticsEventRequest": {
+        "properties": {
+          "name": {
+            "enum": [
+              "onboarding_saved",
+              "baseline_assessment_submitted",
+              "coach_rewrite_requested",
+              "role_play_turn_submitted",
+              "privacy_export_requested",
+              "privacy_deletion_requested",
+              "moderation_report_submitted",
+              "accessibility_preference_changed"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "properties": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsProperties"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "enum": [
+              "web",
+              "mobile",
+              "api"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "source"
+        ],
+        "title": "AnalyticsEventRequest",
+        "type": "object"
+      },
+      "AnalyticsEventResponse": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "eventId": {
+            "title": "Eventid",
+            "type": "string"
+          },
+          "receivedAt": {
+            "format": "date-time",
+            "title": "Receivedat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accepted",
+          "eventId",
+          "receivedAt"
+        ],
+        "title": "AnalyticsEventResponse",
+        "type": "object"
+      },
+      "AnalyticsProperties": {
+        "properties": {
+          "featureFlag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featureflag"
+          },
+          "goalCount": {
+            "anyOf": [
+              {
+                "maximum": 12.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goalcount"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "text",
+                  "voice"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "preference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preference"
+          },
+          "safetyFlagCount": {
+            "anyOf": [
+              {
+                "maximum": 20.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safetyflagcount"
+          },
+          "scoreBucket": {
+            "anyOf": [
+              {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scorebucket"
+          },
+          "surface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Surface"
+          }
+        },
+        "title": "AnalyticsProperties",
+        "type": "object"
+      },
+      "BaselineAssessmentAnswer": {
+        "properties": {
+          "questionId": {
+            "title": "Questionid",
+            "type": "string"
+          },
+          "value": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "questionId",
+          "value"
+        ],
+        "title": "BaselineAssessmentAnswer",
+        "type": "object"
+      },
+      "BaselineAssessmentQuestion": {
+        "properties": {
+          "highLabel": {
+            "title": "Highlabel",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lowLabel": {
+            "title": "Lowlabel",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "lowLabel",
+          "highLabel"
+        ],
+        "title": "BaselineAssessmentQuestion",
+        "type": "object"
+      },
+      "BaselineAssessmentRequest": {
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/BaselineAssessmentAnswer"
+            },
+            "title": "Answers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answers"
+        ],
+        "title": "BaselineAssessmentRequest",
+        "type": "object"
+      },
+      "BaselineAssessmentResponse": {
+        "properties": {
+          "recommendedLessonIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recommendedlessonids",
+            "type": "array"
+          },
+          "score": {
+            "$ref": "#/components/schemas/FeedbackScore"
+          },
+          "style": {
+            "enum": [
+              "accommodating",
+              "direct",
+              "avoidant",
+              "balanced",
+              "intense"
+            ],
+            "title": "Style",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "style",
+          "summary",
+          "score",
+          "recommendedLessonIds"
+        ],
+        "title": "BaselineAssessmentResponse",
+        "type": "object"
+      },
+      "CoachRewriteRequest": {
+        "properties": {
+          "context": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          },
+          "goal": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Goal",
+            "type": "string"
+          },
+          "inputText": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Inputtext",
+            "type": "string"
+          },
+          "relationship": {
+            "enum": [
+              "coworker",
+              "manager",
+              "friend",
+              "partner",
+              "family",
+              "service-provider",
+              "other"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          },
+          "tone": {
+            "enum": [
+              "warm-direct",
+              "firm-boundary",
+              "repair",
+              "curious"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inputText",
+          "relationship",
+          "tone",
+          "goal"
+        ],
+        "title": "CoachRewriteRequest",
+        "type": "object"
+      },
+      "CoachRewriteResponse": {
+        "properties": {
+          "assertiveText": {
+            "title": "Assertivetext",
+            "type": "string"
+          },
+          "coachingNotes": {
+            "items": {
+              "$ref": "#/components/schemas/CoachingNote"
+            },
+            "title": "Coachingnotes",
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "feedbackScore": {
+            "$ref": "#/components/schemas/FeedbackScore"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "outputSafetyFlags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Outputsafetyflags",
+            "type": "array"
+          },
+          "safetyFlags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Safetyflags",
+            "type": "array"
+          },
+          "suggestedPractice": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggestedpractice",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "assertiveText",
+          "coachingNotes",
+          "feedbackScore",
+          "safetyFlags",
+          "outputSafetyFlags",
+          "suggestedPractice",
+          "createdAt"
+        ],
+        "title": "CoachRewriteResponse",
+        "type": "object"
+      },
+      "CoachingNote": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "detail"
+        ],
+        "title": "CoachingNote",
+        "type": "object"
+      },
+      "FeedbackScore": {
+        "properties": {
+          "assertiveness": {
+            "title": "Assertiveness",
+            "type": "integer"
+          },
+          "boundarySpecificity": {
+            "title": "Boundaryspecificity",
+            "type": "integer"
+          },
+          "clarity": {
+            "title": "Clarity",
+            "type": "integer"
+          },
+          "emotionalRegulation": {
+            "title": "Emotionalregulation",
+            "type": "integer"
+          },
+          "empathy": {
+            "title": "Empathy",
+            "type": "integer"
+          },
+          "politeness": {
+            "title": "Politeness",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "clarity",
+          "politeness",
+          "assertiveness",
+          "empathy",
+          "boundarySpecificity",
+          "emotionalRegulation"
+        ],
+        "title": "FeedbackScore",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Lesson": {
+        "properties": {
+          "estimatedMinutes": {
+            "title": "Estimatedminutes",
+            "type": "integer"
+          },
+          "example": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Example",
+            "type": "object"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/LessonExercise"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "objective": {
+            "title": "Objective",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "objective",
+          "example",
+          "exercises",
+          "estimatedMinutes"
+        ],
+        "title": "Lesson",
+        "type": "object"
+      },
+      "LessonExercise": {
+        "properties": {
+          "exampleAnswer": {
+            "title": "Exampleanswer",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "exampleAnswer"
+        ],
+        "title": "LessonExercise",
+        "type": "object"
+      },
+      "ModerationReportRequest": {
+        "properties": {
+          "details": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "reason": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "subjectId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subjectid"
+          },
+          "subjectType": {
+            "enum": [
+              "coach_message",
+              "practice_attempt",
+              "scenario",
+              "other"
+            ],
+            "title": "Subjecttype",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subjectType",
+          "reason"
+        ],
+        "title": "ModerationReportRequest",
+        "type": "object"
+      },
+      "ModerationReportResponse": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "triaged",
+              "resolved",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "createdAt"
+        ],
+        "title": "ModerationReportResponse",
+        "type": "object"
+      },
+      "ModerationReportUpdate": {
+        "properties": {
+          "reviewerNotes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewernotes"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "triaged",
+              "resolved",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "ModerationReportUpdate",
+        "type": "object"
+      },
+      "OnboardingRequest": {
+        "properties": {
+          "accessibility": {
+            "$ref": "#/components/schemas/AccessibilityPreferences"
+          },
+          "ageRange": {
+            "enum": [
+              "under-13",
+              "13-15",
+              "16-17",
+              "18-plus"
+            ],
+            "title": "Agerange",
+            "type": "string"
+          },
+          "consentAccepted": {
+            "title": "Consentaccepted",
+            "type": "boolean"
+          },
+          "goals": {
+            "items": {
+              "enum": [
+                "clearer-asks",
+                "boundaries",
+                "hard-feedback",
+                "less-apologizing",
+                "conflict-repair",
+                "workplace-confidence"
+              ],
+              "type": "string"
+            },
+            "title": "Goals",
+            "type": "array"
+          },
+          "privacyControls": {
+            "$ref": "#/components/schemas/PrivacyControls"
+          }
+        },
+        "required": [
+          "ageRange",
+          "consentAccepted",
+          "goals",
+          "privacyControls",
+          "accessibility"
+        ],
+        "title": "OnboardingRequest",
+        "type": "object"
+      },
+      "OnboardingResponse": {
+        "properties": {
+          "completed": {
+            "title": "Completed",
+            "type": "boolean"
+          },
+          "nextStep": {
+            "enum": [
+              "assessment",
+              "coach"
+            ],
+            "title": "Nextstep",
+            "type": "string"
+          },
+          "privacyControls": {
+            "$ref": "#/components/schemas/PrivacyControls"
+          }
+        },
+        "required": [
+          "completed",
+          "nextStep",
+          "privacyControls"
+        ],
+        "title": "OnboardingResponse",
+        "type": "object"
+      },
+      "PracticeAttemptRequest": {
+        "properties": {
+          "draftText": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Drafttext",
+            "type": "string"
+          },
+          "scenarioId": {
+            "title": "Scenarioid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scenarioId",
+          "draftText"
+        ],
+        "title": "PracticeAttemptRequest",
+        "type": "object"
+      },
+      "PracticeAttemptResponse": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/CoachingNote"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "score": {
+            "$ref": "#/components/schemas/FeedbackScore"
+          }
+        },
+        "required": [
+          "id",
+          "score",
+          "notes",
+          "createdAt"
+        ],
+        "title": "PracticeAttemptResponse",
+        "type": "object"
+      },
+      "PracticeScenario": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "difficulty": {
+            "enum": [
+              "starter",
+              "steady",
+              "stretch"
+            ],
+            "title": "Difficulty",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "description",
+          "difficulty",
+          "category",
+          "prompt"
+        ],
+        "title": "PracticeScenario",
+        "type": "object"
+      },
+      "PrivacyControls": {
+        "properties": {
+          "allowDeidentifiedProductAnalytics": {
+            "title": "Allowdeidentifiedproductanalytics",
+            "type": "boolean"
+          },
+          "allowPersonalizedRecommendations": {
+            "title": "Allowpersonalizedrecommendations",
+            "type": "boolean"
+          },
+          "savePracticeHistory": {
+            "title": "Savepracticehistory",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "savePracticeHistory",
+          "allowPersonalizedRecommendations",
+          "allowDeidentifiedProductAnalytics"
+        ],
+        "title": "PrivacyControls",
+        "type": "object"
+      },
+      "PrivacyDeletionRequest": {
+        "properties": {
+          "deleteAccount": {
+            "title": "Deleteaccount",
+            "type": "boolean"
+          },
+          "deleteAssessment": {
+            "title": "Deleteassessment",
+            "type": "boolean"
+          },
+          "deletePracticeHistory": {
+            "title": "Deletepracticehistory",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deletePracticeHistory",
+          "deleteAssessment",
+          "deleteAccount"
+        ],
+        "title": "PrivacyDeletionRequest",
+        "type": "object"
+      },
+      "PrivacyDeletionResponse": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "estimatedCompletion": {
+            "format": "date-time",
+            "title": "Estimatedcompletion",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "completed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "createdAt",
+          "estimatedCompletion"
+        ],
+        "title": "PrivacyDeletionResponse",
+        "type": "object"
+      },
+      "PrivacyExportResponse": {
+        "properties": {
+          "downloadUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downloadurl"
+          },
+          "format": {
+            "const": "json",
+            "title": "Format",
+            "type": "string"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "title": "Generatedat",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "includes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Includes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "generatedAt",
+          "format",
+          "includes"
+        ],
+        "title": "PrivacyExportResponse",
+        "type": "object"
+      },
+      "ProgressSummary": {
+        "properties": {
+          "nextSkill": {
+            "title": "Nextskill",
+            "type": "string"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/Recommendation"
+            },
+            "title": "Recommendations",
+            "type": "array"
+          },
+          "rewritesThisWeek": {
+            "title": "Rewritesthisweek",
+            "type": "integer"
+          },
+          "savedPhrases": {
+            "title": "Savedphrases",
+            "type": "integer"
+          },
+          "streakDays": {
+            "title": "Streakdays",
+            "type": "integer"
+          },
+          "strongestSkill": {
+            "title": "Strongestskill",
+            "type": "string"
+          }
+        },
+        "required": [
+          "streakDays",
+          "rewritesThisWeek",
+          "savedPhrases",
+          "strongestSkill",
+          "nextSkill",
+          "recommendations"
+        ],
+        "title": "ProgressSummary",
+        "type": "object"
+      },
+      "Recommendation": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Priority",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "reason",
+          "action",
+          "priority"
+        ],
+        "title": "Recommendation",
+        "type": "object"
+      },
+      "RolePlayRequest": {
+        "properties": {
+          "mode": {
+            "default": "text",
+            "enum": [
+              "text",
+              "voice"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "scenarioId": {
+            "title": "Scenarioid",
+            "type": "string"
+          },
+          "userMessage": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Usermessage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scenarioId",
+          "userMessage"
+        ],
+        "title": "RolePlayRequest",
+        "type": "object"
+      },
+      "RolePlayResponse": {
+        "properties": {
+          "captions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Captions",
+            "type": "array"
+          },
+          "coachReply": {
+            "title": "Coachreply",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nextPrompt": {
+            "title": "Nextprompt",
+            "type": "string"
+          },
+          "safetyFlags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Safetyflags",
+            "type": "array"
+          },
+          "score": {
+            "$ref": "#/components/schemas/FeedbackScore"
+          },
+          "voiceEnabled": {
+            "title": "Voiceenabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "coachReply",
+          "captions",
+          "score",
+          "safetyFlags",
+          "nextPrompt",
+          "voiceEnabled",
+          "createdAt"
+        ],
+        "title": "RolePlayResponse",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Coaching, practice, progress, and moderation API for SpeakAble.",
+    "title": "SpeakAble API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/admin/moderation/reports": {
+      "get": {
+        "operationId": "list_reports_v1_admin_moderation_reports_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModerationReportResponse"
+                  },
+                  "title": "Response List Reports V1 Admin Moderation Reports Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Reports",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/moderation/reports/{report_id}": {
+      "patch": {
+        "operationId": "update_report_v1_admin_moderation_reports__report_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationReportUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Report",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/analytics/events": {
+      "post": {
+        "operationId": "track_event_v1_analytics_events_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsEventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Track Event",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/assessment/baseline": {
+      "post": {
+        "operationId": "submit_baseline_v1_assessment_baseline_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaselineAssessmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaselineAssessmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Baseline",
+        "tags": [
+          "assessment"
+        ]
+      }
+    },
+    "/v1/assessment/baseline/questions": {
+      "get": {
+        "operationId": "list_questions_v1_assessment_baseline_questions_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BaselineAssessmentQuestion"
+                  },
+                  "title": "Response List Questions V1 Assessment Baseline Questions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Questions",
+        "tags": [
+          "assessment"
+        ]
+      }
+    },
+    "/v1/coach/rewrite": {
+      "post": {
+        "operationId": "create_rewrite_v1_coach_rewrite_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachRewriteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoachRewriteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Rewrite",
+        "tags": [
+          "coach"
+        ]
+      }
+    },
+    "/v1/lessons": {
+      "get": {
+        "operationId": "list_lessons_v1_lessons_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Lesson"
+                  },
+                  "title": "Response List Lessons V1 Lessons Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Lessons",
+        "tags": [
+          "lessons"
+        ]
+      }
+    },
+    "/v1/moderation/reports": {
+      "post": {
+        "operationId": "create_report_v1_moderation_reports_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Report",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/v1/onboarding": {
+      "post": {
+        "operationId": "complete_onboarding_v1_onboarding_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Complete Onboarding",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/v1/practice-attempts": {
+      "post": {
+        "operationId": "create_practice_attempt_v1_practice_attempts_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeAttemptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeAttemptResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Practice Attempt",
+        "tags": [
+          "coach"
+        ]
+      }
+    },
+    "/v1/privacy/delete": {
+      "post": {
+        "operationId": "request_deletion_v1_privacy_delete_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyDeletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyDeletionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Deletion",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/v1/privacy/export": {
+      "post": {
+        "operationId": "export_privacy_data_v1_privacy_export_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyExportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Privacy Data",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/v1/progress": {
+      "get": {
+        "operationId": "get_progress_v1_progress_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Progress",
+        "tags": [
+          "progress"
+        ]
+      }
+    },
+    "/v1/recommendations": {
+      "get": {
+        "operationId": "list_recommendations_v1_recommendations_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Recommendation"
+                  },
+                  "title": "Response List Recommendations V1 Recommendations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Recommendations",
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
+    "/v1/role-play": {
+      "post": {
+        "operationId": "create_role_play_turn_v1_role_play_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RolePlayRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolePlayResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Role Play Turn",
+        "tags": [
+          "role-play"
+        ]
+      }
+    },
+    "/v1/scenarios": {
+      "get": {
+        "operationId": "list_scenarios_v1_scenarios_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "difficulty",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Difficulty"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 12,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PracticeScenario"
+                  },
+                  "title": "Response List Scenarios V1 Scenarios Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Scenarios",
+        "tags": [
+          "scenarios"
+        ]
+      }
+    }
+  }
+}
