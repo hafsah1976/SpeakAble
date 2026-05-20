@@ -2,7 +2,37 @@
 
 Use this when the review deadline is today.
 
-## Fastest Hosted Demo
+## Fastest Hosted Demo: Netlify
+
+Deploy the web app on Netlify with a clearly labeled demo mode. The repo has a
+root `netlify.toml`, so Netlify can detect the build settings automatically.
+
+In Netlify:
+
+1. Add new site from Git.
+2. Choose `hafsah1976/SpeakAble`.
+3. Leave build settings from `netlify.toml` unless Netlify asks you to confirm them.
+4. Deploy.
+
+Expected build settings:
+
+- Build command: `npm --workspace @speakable/web run build`
+- Publish directory: `apps/web/.next`
+
+The `netlify.toml` file sets:
+
+```text
+NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true
+NEXT_PUBLIC_AWS_REGION=us-east-1
+NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID=us-east-1_Elr16XsoJ
+NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID=737qee90btb50j0cks8mk1qu40
+```
+
+This makes the hosted app usable without AWS API/RDS resources. The UI labels
+the state as `Submission demo`, uses deterministic local coaching logic, and
+does not claim production database persistence is live.
+
+## Alternate Hosted Demo: Vercel
 
 Deploy the web app on Vercel with a clearly labeled demo mode:
 
@@ -19,9 +49,9 @@ NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false
 NEXT_PUBLIC_API_URL=
 ```
 
-This makes the hosted app usable without AWS resources. The UI labels the state
-as `Submission demo`, uses deterministic local coaching logic, and does not
-claim production AWS auth/database persistence is live.
+This makes the hosted app usable without AWS API/RDS resources. The UI labels
+the state as `Submission demo`, uses deterministic local coaching logic, and
+does not claim production database persistence is live.
 
 ## Full AWS Live Path
 

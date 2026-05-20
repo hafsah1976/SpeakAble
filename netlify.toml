@@ -1,0 +1,14 @@
+[build]
+command = "npm --workspace @speakable/web run build"
+publish = "apps/web/.next"
+
+[build.environment]
+NEXT_PUBLIC_AWS_REGION = "us-east-1"
+NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID = "us-east-1_Elr16XsoJ"
+NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID = "737qee90btb50j0cks8mk1qu40"
+NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO = "true"
+NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK = "false"
+NEXT_PUBLIC_API_URL = ""
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"

@@ -126,6 +126,14 @@ Required GitHub repository secrets for full deployment:
 - `EXPO_TOKEN`
 - Optional: `EAS_SUBMIT_ON_DEPLOY=true`
 
+Web on Netlify:
+
+1. Add a new Netlify site from the GitHub repo.
+2. Use the root `netlify.toml`.
+3. Confirm the build command is `npm --workspace @speakable/web run build`.
+4. Confirm the publish directory is `apps/web/.next`.
+5. For submission mode, keep `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true` until the AWS API/RDS path is live.
+
 Web on Vercel:
 
 1. Create a Vercel project rooted at the repository root.
