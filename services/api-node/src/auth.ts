@@ -25,9 +25,9 @@ export function authMiddleware(settings: Settings): RequestHandler {
 
       jwks ??= createRemoteJWKSet(new URL(`${settings.authIssuer}/.well-known/jwks.json`));
       const verified = await jwtVerify(token, jwks, {
-        issuer: settings.authIssuer,
-        audience: settings.authAudience
+        issuer: settings.authIssuer
       });
+      requireExpectedAudience(verified.payload, settings.authAudience);
 
       request.user = payloadToUser(verified.payload);
       next();
@@ -61,4 +61,21 @@ function payloadToUser(payload: JWTPayload) {
     email: typeof payload.email === "string" ? payload.email : undefined,
     authProvider: "jwt" as const
   };
+}
+
+export function tokenMatchesExpectedAudience(payload: JWTPayload, expectedAudience: string): boolean {
+  const audienceValues = Array.isArray(payload.aud)
+    ? payload.aud
+    : typeof payload.aud === "string"
+      ? [payload.aud]
+      : [];
+  const clientId = typeof payload.client_id === "string" ? payload.client_id : undefined;
+
+  return audienceValues.includes(expectedAudience) || clientId === expectedAudience;
+}
+
+function requireExpectedAudience(payload: JWTPayload, expectedAudience: string): void {
+  if (!tokenMatchesExpectedAudience(payload, expectedAudience)) {
+    throw new AppError(401, "UNAUTHORIZED", "Sign in to continue.");
+  }
 }

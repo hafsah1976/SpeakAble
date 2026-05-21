@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: speakable-api
+    runtime: node
+    branch: main
+    rootDir: .
+    buildCommand: npm ci && npm --workspace @speakable/api run build
+    startCommand: npm --workspace @speakable/api run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_STORE
+        value: mongo
+      - key: CORS_ORIGINS
+        value: https://speakable-app.netlify.app,https://speakable-app.com
+      - key: AUTH_REQUIRED
+        value: "true"
+      - key: AUTH_ISSUER
+        value: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_Elr16XsoJ
+      - key: AUTH_AUDIENCE
+        value: 737qee90btb50j0cks8mk1qu40
+      - key: VOICE_ROLE_PLAY_ENABLED
+        value: "false"
+      - key: EXTERNAL_SHARING_ENABLED
+        value: "false"
+      - key: MONGODB_URI
+        sync: false

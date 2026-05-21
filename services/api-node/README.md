@@ -23,3 +23,12 @@ npm --workspace @speakable/api run seed
 npm --workspace @speakable/api run typecheck
 npm --workspace @speakable/api run test
 ```
+
+## Render Deployment
+
+The repository root `render.yaml` defines the production web service. Create a
+Render Blueprint from the GitHub repository and provide `MONGODB_URI` when the
+Blueprint prompts for the secret value.
+
+After Render gives the API a public URL, point the web and mobile
+`*_PUBLIC_API_URL` variables at that URL.

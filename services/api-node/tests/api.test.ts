@@ -1,6 +1,7 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
+import { tokenMatchesExpectedAudience } from "../src/auth.js";
 import { MemoryRepository } from "../src/repositories/memoryRepository.js";
 
 function makeTestApp() {
@@ -199,5 +200,11 @@ describe("SpeakAble MERN API", () => {
 
     expect(response.body.error.message).toBe("The request could not be processed.");
     expect(body).not.toMatch(/zod|express|mongo|mongoose|stack|trace|cognito|aws/i);
+  });
+
+  it("matches JWT audience and Cognito access-token client ids", () => {
+    expect(tokenMatchesExpectedAudience({ aud: "speakable-client" }, "speakable-client")).toBe(true);
+    expect(tokenMatchesExpectedAudience({ client_id: "speakable-client" }, "speakable-client")).toBe(true);
+    expect(tokenMatchesExpectedAudience({ client_id: "other-client" }, "speakable-client")).toBe(false);
   });
 });

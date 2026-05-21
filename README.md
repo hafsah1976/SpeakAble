@@ -155,8 +155,7 @@ Web on Vercel:
 
 MERN API:
 
-1. Deploy `services/api-node` to a Node host such as Render, Fly.io, Railway,
-   or AWS App Runner.
+1. Create a Render Blueprint from the root `render.yaml`.
 2. Set `DATA_STORE=mongo` and `MONGODB_URI` to a production MongoDB database.
 3. Set `AUTH_REQUIRED=true`, `AUTH_ISSUER`, and `AUTH_AUDIENCE` to match the
    identity provider used by web and mobile.
