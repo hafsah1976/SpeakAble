@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     api_cors_origins: str = "http://localhost:3000,http://localhost:8081"
     require_auth: bool = False
     auth_provider: str = "cognito"
+    trust_gateway_auth: bool = False
     voice_role_play_enabled: bool = False
     external_sharing_enabled: bool = False
     coach_model_provider: str = "deterministic"
