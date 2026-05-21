@@ -232,7 +232,7 @@ export function CoachWorkspace({
       setResult(response);
       setStatus("Rewrite ready");
     } catch {
-      setStatus("API unavailable. No production fallback was used.");
+      setStatus("The coach is temporarily unavailable. Please try again.");
     } finally {
       setIsLoading(false);
     }

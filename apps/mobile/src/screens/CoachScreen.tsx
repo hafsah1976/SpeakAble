@@ -188,7 +188,7 @@ export function CoachScreen({
       setResult(await apiClient.rewriteMessage(payload));
       setStatus("Rewrite ready");
     } catch {
-      setStatus("API unavailable. No production fallback was used.");
+      setStatus("The coach is temporarily unavailable. Please try again.");
     } finally {
       setIsLoading(false);
     }

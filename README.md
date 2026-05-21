@@ -2,9 +2,9 @@
 
 SpeakAble is a greenfield coaching app for people who want to express needs,
 boundaries, and feedback with clarity and warmth. The production slice includes
-a Next.js web app, an Expo mobile app, a FastAPI service, shared TypeScript
-contracts, shared design tokens, AWS Cognito auth, AWS RDS PostgreSQL with RLS
-and `pgvector`, and CI/CD scaffolding.
+a Next.js web app, an Expo mobile app, a MERN-style Node/Express API, shared
+TypeScript contracts, shared design tokens, Cognito-compatible JWT auth,
+MongoDB persistence, and CI/CD scaffolding.
 
 ## Monorepo
 
@@ -16,9 +16,10 @@ packages/
   types/           Shared TypeScript contracts and API client
   ui/              Shared design tokens
 services/
-  api/             FastAPI coaching and moderation API
+  api-node/        Express/Mongo coaching and moderation API
+  api/             Legacy FastAPI coaching and moderation API
 database/
-  migrations/      AWS RDS/Postgres SQL migrations and RLS policies
+  migrations/      Legacy AWS RDS/Postgres SQL migrations and RLS policies
   scripts/         Cross-platform migration runner
 infra/
   aws/             Cognito, RDS, and App Runner deployment notes
@@ -31,7 +32,6 @@ docs/              Architecture, schema, API, test, deployment, and risk plans
 
 ```bash
 npm ci
-python -m pip install -e "services/api[dev]"
 npx playwright install chromium
 npm run dev:api
 npm run dev:web
@@ -46,13 +46,14 @@ Copy the templates before running production-like flows:
 
 - `apps/web/.env.local`
 - `apps/mobile/.env`
-- `services/api/.env`
+- `services/api-node/.env`
 - `database/.env`
 
 AWS Cognito is the shared identity provider for web, mobile, and API
 authorization. Local development can render without Cognito keys through the
 explicit demo fallback, but production should set Cognito variables, set
-`REQUIRE_AUTH=true`, and set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
+`AUTH_REQUIRED=true`, configure `AUTH_ISSUER` and `AUTH_AUDIENCE`, and set
+`NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 For a time-boxed review, `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true` enables a
 clearly labeled hosted demo without pretending AWS production auth is live.
 
@@ -64,11 +65,10 @@ storage adapter. Keep `VOICE_ROLE_PLAY_ENABLED=false` and
 
 ```bash
 npm ci
-python -m pip install -e "services/api[dev]"
 npx playwright install chromium
 cp apps/web/.env.example apps/web/.env.local
 cp apps/mobile/.env.example apps/mobile/.env
-cp services/api/.env.example services/api/.env
+cp services/api-node/.env.example services/api-node/.env
 cp database/.env.example database/.env
 ```
 
@@ -80,8 +80,12 @@ npm run dev:web
 npm run dev:mobile
 ```
 
-Run database migrations after `DATABASE_URL` points to a local or AWS RDS
-Postgres database:
+The Node API defaults to `DATA_STORE=memory` so it runs immediately for local
+development. For MongoDB persistence, set `DATA_STORE=mongo` and `MONGODB_URI`.
+Seed the Mongo demo state with `npm --workspace @speakable/api run seed`.
+
+Run legacy Postgres migrations only when maintaining the old FastAPI/Postgres
+path:
 
 ```bash
 npm run db:migrate
@@ -105,6 +109,7 @@ npm run typecheck
 npm run test:unit
 npm run test:integration
 npm run test:e2e
+npm --workspace @speakable/api run build
 npm --workspace @speakable/web run build
 npm run openapi
 ```
@@ -115,8 +120,8 @@ GitHub Actions has two workflows:
 
 - `CI` runs linting, typechecking, unit tests, integration tests, Playwright e2e
   tests, web build, and OpenAPI drift checks.
-- `Deploy` runs Vercel web deploy, AWS App Runner API deploy, AWS RDS migrations,
-  and EAS mobile builds. Jobs skip cleanly until matching secrets are configured.
+- `Deploy` runs web deploy, API deploy, and EAS mobile builds. Jobs skip
+  cleanly until matching secrets are configured.
 
 Required GitHub repository secrets for full deployment:
 
@@ -136,7 +141,7 @@ Production demo: https://speakable-app.netlify.app/
 4. Confirm the publish directory is `apps/web/out`.
 5. Use `NEXT_PRIVATE_TARGET=netlify-static` for static export on Netlify.
 6. Set `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false` and point
-   `NEXT_PUBLIC_API_URL` at the live AWS API Gateway URL for production.
+   `NEXT_PUBLIC_API_URL` at the live Node API URL for production.
 
 Web on Vercel:
 
@@ -148,7 +153,20 @@ Web on Vercel:
    `NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID`, and `NEXT_PUBLIC_API_URL`.
 5. Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 
-API on AWS Lambda/API Gateway:
+MERN API:
+
+1. Deploy `services/api-node` to a Node host such as Render, Fly.io, Railway,
+   or AWS App Runner.
+2. Set `DATA_STORE=mongo` and `MONGODB_URI` to a production MongoDB database.
+3. Set `AUTH_REQUIRED=true`, `AUTH_ISSUER`, and `AUTH_AUDIENCE` to match the
+   identity provider used by web and mobile.
+4. Keep `VOICE_ROLE_PLAY_ENABLED=false` and `EXTERNAL_SHARING_ENABLED=false`
+   until those surfaces pass safety review.
+5. Verify `/health`, `/ready`, and `/openapi.json`.
+6. Point `NEXT_PUBLIC_API_URL` and `EXPO_PUBLIC_API_URL` to the deployed Node
+   API.
+
+Legacy API on AWS Lambda/API Gateway:
 
 1. Build `services/api/Dockerfile.lambda` and push to ECR repo
    `speakable-api-lambda`.

@@ -4,20 +4,24 @@
   "version": "0.1.0",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "services/api-node"
   ],
   "scripts": {
     "dev:web": "npm --workspace @speakable/web run dev",
     "dev:mobile": "npm --workspace @speakable/mobile run start",
-    "dev:api": "cd services/api && python -m uvicorn app.main:app --reload --port 8000",
+    "dev:api": "npm --workspace @speakable/api run dev",
+    "dev:api:python": "cd services/api && python -m uvicorn app.main:app --reload --port 8000",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present && cd services/api && python -m pytest",
-    "test:unit": "cd services/api && python -m pytest tests/unit",
-    "test:integration": "cd services/api && python -m pytest tests/test_api.py",
+    "test": "npm run test --workspaces --if-present",
+    "test:unit": "npm --workspace @speakable/api run test",
+    "test:integration": "npm --workspace @speakable/api run test",
+    "test:python": "cd services/api && python -m pytest",
     "test:e2e": "npm --workspace @speakable/web run e2e",
-    "openapi": "python services/api/scripts/export_openapi.py docs/openapi.json",
+    "openapi": "npm --workspace @speakable/api run openapi",
+    "openapi:python": "python services/api/scripts/export_openapi.py docs/openapi.json",
     "db:migrate": "python database/scripts/apply_sql.py database/migrations/0001_initial_schema.sql",
     "db:seed": "python database/scripts/apply_sql.py database/seed.sql"
   },
