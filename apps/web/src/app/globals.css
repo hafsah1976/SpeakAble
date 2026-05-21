@@ -401,6 +401,7 @@ a {
 .result-panel,
 .setup-panel,
 .side-section {
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: #ffffff;
@@ -614,9 +615,10 @@ blockquote {
   border-radius: 0 var(--radius) var(--radius) 0;
   background: var(--surface);
   color: var(--text);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.42;
+  font-size: 18px;
+  font-weight: 680;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
   padding: 20px;
 }
 
@@ -978,7 +980,7 @@ blockquote {
   clip-path: inset(50%);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1360px) {
   .app-shell {
     grid-template-columns: 220px minmax(0, 1fr);
   }
@@ -1074,6 +1076,6 @@ blockquote {
   }
 
   blockquote {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
