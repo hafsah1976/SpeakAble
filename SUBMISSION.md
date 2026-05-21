@@ -4,6 +4,8 @@ Use this when the review deadline is today.
 
 ## Fastest Hosted Demo: Netlify
 
+Stable demo URL: https://speakable-app.netlify.app/
+
 Deploy the web app on Netlify with a clearly labeled demo mode. The repo has a
 root `netlify.toml`, so Netlify can detect the build settings automatically.
 
@@ -16,8 +18,9 @@ In Netlify:
 
 Expected build settings:
 
-- Build command: `npm --workspace @speakable/web run build`
-- Publish directory: `apps/web/.next`
+- Base directory: repository root
+- Build command: `npm ci && npm --workspace @speakable/web run build`
+- Publish directory: `apps/web/out`
 
 The `netlify.toml` file sets:
 
@@ -108,8 +111,8 @@ Use seed data only for demo/non-production targets.
 
 ## Reviewer Demo Script
 
-1. Open the hosted web app.
-2. Confirm the account badge says `Submission demo` or sign in with Cognito if AWS is configured.
+1. Open https://speakable-app.netlify.app/.
+2. Sign in with `alex@example.test` and `Password123!`.
 3. Save onboarding with the 18+ age gate and consent checked.
 4. Update the baseline assessment.
 5. Generate an assertive rewrite from the sample deadline message.

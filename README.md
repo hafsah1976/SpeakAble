@@ -128,10 +128,12 @@ Required GitHub repository secrets for full deployment:
 
 Web on Netlify:
 
+Production demo: https://speakable-app.netlify.app/
+
 1. Add a new Netlify site from the GitHub repo.
 2. Use the root `netlify.toml`.
-3. Confirm the build command is `npm --workspace @speakable/web run build`.
-4. Confirm the publish directory is `apps/web/.next`.
+3. Confirm the build command is `npm ci && npm --workspace @speakable/web run build`.
+4. Confirm the publish directory is `apps/web/out`.
 5. For submission mode, keep `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true` until the AWS API/RDS path is live.
 
 Web on Vercel:
