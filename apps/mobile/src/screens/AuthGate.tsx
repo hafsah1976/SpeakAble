@@ -21,6 +21,21 @@ const demoAccountLabel =
 
 type AuthMode = "sign-in" | "sign-up" | "confirm";
 
+const authCopy: Record<AuthMode, { description: string; status: string }> = {
+  "sign-in": {
+    description: "Sign in to continue your private practice.",
+    status: "Enter your email and password to continue."
+  },
+  "sign-up": {
+    description: "Create a private account to save your progress.",
+    status: "Use an email you can access for account confirmation."
+  },
+  confirm: {
+    description: "Enter the confirmation code sent to your email.",
+    status: "Check your email for the confirmation code."
+  }
+};
+
 export function AuthGate() {
   const [account, setAccount] = useState<AuthAccount | null>(null);
   const [isReady, setIsReady] = useState(() => !configureAwsAuth());
@@ -62,10 +77,9 @@ export function AuthGate() {
     }
 
     return (
-      <AuthFrame title="Authentication needs AWS configuration">
+      <AuthFrame title="Sign-in is temporarily unavailable">
         <Text style={styles.description}>
-          Set EXPO_PUBLIC_AWS_REGION, EXPO_PUBLIC_AWS_COGNITO_USER_POOL_ID, and
-          EXPO_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID before using production auth.
+          SpeakAble could not prepare secure sign-in. Please try again shortly.
         </Text>
       </AuthFrame>
     );
@@ -99,7 +113,12 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
   const [password, setPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("Use your AWS Cognito account to enter the private coach workspace.");
+  const [message, setMessage] = useState(authCopy["sign-in"].status);
+
+  function chooseMode(nextMode: AuthMode) {
+    setMode(nextMode);
+    setMessage(authCopy[nextMode].status);
+  }
 
   async function submit() {
     if (mode !== "confirm" && password.length < 8) {
@@ -120,16 +139,15 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
           }
           setMessage("Signed in");
         } else {
-          setMessage(`Next step required: ${result.nextStep.signInStep}`);
+          setMessage("One more sign-in step is needed. Check your email and try again.");
         }
       } else if (mode === "sign-up") {
         const result = await signUpWithEmail(email, password);
         if (result.nextStep.signUpStep === "CONFIRM_SIGN_UP") {
-          setMode("confirm");
-          setMessage("Enter the confirmation code sent by AWS Cognito.");
+          chooseMode("confirm");
         } else {
-          setMessage("Account created. You can sign in now.");
-          setMode("sign-in");
+          chooseMode("sign-in");
+          setMessage("Account created. Sign in to continue.");
         }
       } else {
         await confirmEmailSignUp(email, confirmationCode);
@@ -137,7 +155,7 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
         setMode("sign-in");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Authentication failed.");
+      setMessage(authErrorMessage(error, mode));
     } finally {
       setIsSubmitting(false);
     }
@@ -145,15 +163,13 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
 
   return (
     <AuthFrame title={mode === "sign-in" ? "Welcome back" : mode === "sign-up" ? "Create your account" : "Confirm account"}>
-      <Text style={styles.description}>
-        SpeakAble uses AWS Cognito for sign-up, sign-in, session refresh, and API bearer tokens.
-      </Text>
+      <Text style={styles.description}>{authCopy[mode].description}</Text>
       <View style={styles.tabRow} accessibilityRole="tablist">
         <Pressable
           accessibilityRole="tab"
           accessibilityState={{ selected: mode === "sign-in" }}
           style={[styles.tabButton, mode === "sign-in" && styles.tabSelected]}
-          onPress={() => setMode("sign-in")}
+          onPress={() => chooseMode("sign-in")}
         >
           <Text style={[styles.tabText, mode === "sign-in" && styles.tabTextSelected]}>Sign in</Text>
         </Pressable>
@@ -161,7 +177,7 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
           accessibilityRole="tab"
           accessibilityState={{ selected: mode === "sign-up" || mode === "confirm" }}
           style={[styles.tabButton, (mode === "sign-up" || mode === "confirm") && styles.tabSelected]}
-          onPress={() => setMode("sign-up")}
+          onPress={() => chooseMode("sign-up")}
         >
           <Text style={[styles.tabText, (mode === "sign-up" || mode === "confirm") && styles.tabTextSelected]}>
             Sign up
@@ -227,6 +243,36 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
       </Text>
     </AuthFrame>
   );
+}
+
+function authErrorMessage(error: unknown, mode: AuthMode) {
+  if (!(error instanceof Error)) {
+    return "We could not complete that request. Please try again.";
+  }
+
+  const detail = `${error.name} ${error.message}`.toLowerCase();
+  if (detail.includes("notauthorized") || detail.includes("incorrect")) {
+    return "We could not sign you in. Check your email and password.";
+  }
+  if (detail.includes("usernotconfirmed")) {
+    return "Please confirm your email before signing in.";
+  }
+  if (detail.includes("usernameexists")) {
+    return "An account already exists for that email. Try signing in.";
+  }
+  if (detail.includes("codemismatch")) {
+    return "That confirmation code did not match. Check the code and try again.";
+  }
+  if (detail.includes("expiredcode")) {
+    return "That confirmation code expired. Request a new code and try again.";
+  }
+  if (detail.includes("network") || detail.includes("failed to fetch")) {
+    return "Network connection interrupted. Please try again.";
+  }
+
+  return mode === "sign-in"
+    ? "We could not sign you in. Please try again."
+    : "We could not complete account setup. Please try again.";
 }
 
 function AuthFrame({ title, children }: { title: string; children: ReactNode }) {

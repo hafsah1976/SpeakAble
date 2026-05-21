@@ -22,6 +22,21 @@ const demoAccountLabel =
 
 type AuthMode = "sign-in" | "sign-up" | "confirm";
 
+const authCopy: Record<AuthMode, { description: string; status: string }> = {
+  "sign-in": {
+    description: "Sign in to continue your private practice.",
+    status: "Enter your email and password to continue."
+  },
+  "sign-up": {
+    description: "Create a private account to save your progress.",
+    status: "Use an email you can access for account confirmation."
+  },
+  confirm: {
+    description: "Enter the confirmation code sent to your email.",
+    status: "Check your email for the confirmation code."
+  }
+};
+
 export function AuthGate() {
   const [account, setAccount] = useState<AuthAccount | null>(null);
   const [isReady, setIsReady] = useState(() => !configureAwsAuth());
@@ -95,7 +110,12 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
   const [password, setPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("Use your AWS Cognito account to enter the private coach workspace.");
+  const [message, setMessage] = useState(authCopy["sign-in"].status);
+
+  function chooseMode(nextMode: AuthMode) {
+    setMode(nextMode);
+    setMessage(authCopy[nextMode].status);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,16 +138,15 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
           }
           setMessage("Signed in");
         } else {
-          setMessage(`Next step required: ${result.nextStep.signInStep}`);
+          setMessage("One more sign-in step is needed. Check your email and try again.");
         }
       } else if (mode === "sign-up") {
         const result = await signUpWithEmail(email, password);
         if (result.nextStep.signUpStep === "CONFIRM_SIGN_UP") {
-          setMode("confirm");
-          setMessage("Enter the confirmation code sent by AWS Cognito.");
+          chooseMode("confirm");
         } else {
-          setMessage("Account created. You can sign in now.");
-          setMode("sign-in");
+          chooseMode("sign-in");
+          setMessage("Account created. Sign in to continue.");
         }
       } else {
         await confirmEmailSignUp(email, confirmationCode);
@@ -135,7 +154,7 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
         setMode("sign-in");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Authentication failed.");
+      setMessage(authErrorMessage(error, mode));
     } finally {
       setIsSubmitting(false);
     }
@@ -144,13 +163,13 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
   return (
     <AuthFrame
       title={mode === "sign-in" ? "Welcome back" : mode === "sign-up" ? "Create your account" : "Confirm account"}
-      description="SpeakAble uses AWS Cognito for sign-up, sign-in, session refresh, and bearer tokens for the API."
+      description={authCopy[mode].description}
     >
       <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
         <button
           type="button"
           className={mode === "sign-in" ? "selected" : ""}
-          onClick={() => setMode("sign-in")}
+          onClick={() => chooseMode("sign-in")}
           role="tab"
           aria-selected={mode === "sign-in"}
         >
@@ -160,7 +179,7 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
         <button
           type="button"
           className={mode === "sign-up" || mode === "confirm" ? "selected" : ""}
-          onClick={() => setMode("sign-up")}
+          onClick={() => chooseMode("sign-up")}
           role="tab"
           aria-selected={mode === "sign-up" || mode === "confirm"}
         >
@@ -235,15 +254,45 @@ function AuthForm({ onSignedIn }: { onSignedIn: (account: AuthAccount) => void }
 function AuthUnavailable() {
   return (
     <AuthFrame
-      title="Authentication needs AWS configuration"
-      description="Set NEXT_PUBLIC_AWS_REGION, NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID, and NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID before using production auth."
+      title="Sign-in is temporarily unavailable"
+      description="SpeakAble could not prepare secure sign-in. Please try again shortly."
     >
       <div className="auth-warning">
         <ShieldCheck size={18} aria-hidden="true" />
-        <p>Local demo fallback is disabled, so the app is waiting for AWS Cognito credentials.</p>
+        <p>Your account data has not been loaded on this device.</p>
       </div>
     </AuthFrame>
   );
+}
+
+function authErrorMessage(error: unknown, mode: AuthMode) {
+  if (!(error instanceof Error)) {
+    return "We could not complete that request. Please try again.";
+  }
+
+  const detail = `${error.name} ${error.message}`.toLowerCase();
+  if (detail.includes("notauthorized") || detail.includes("incorrect")) {
+    return "We could not sign you in. Check your email and password.";
+  }
+  if (detail.includes("usernotconfirmed")) {
+    return "Please confirm your email before signing in.";
+  }
+  if (detail.includes("usernameexists")) {
+    return "An account already exists for that email. Try signing in.";
+  }
+  if (detail.includes("codemismatch")) {
+    return "That confirmation code did not match. Check the code and try again.";
+  }
+  if (detail.includes("expiredcode")) {
+    return "That confirmation code expired. Request a new code and try again.";
+  }
+  if (detail.includes("network") || detail.includes("failed to fetch")) {
+    return "Network connection interrupted. Please try again.";
+  }
+
+  return mode === "sign-in"
+    ? "We could not sign you in. Please try again."
+    : "We could not complete account setup. Please try again.";
 }
 
 function AuthFrame({
