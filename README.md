@@ -134,7 +134,9 @@ Production demo: https://speakable-app.netlify.app/
 2. Use the root `netlify.toml`.
 3. Confirm the build command is `npm ci && npm --workspace @speakable/web run build`.
 4. Confirm the publish directory is `apps/web/out`.
-5. For submission mode, keep `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true` until the AWS API/RDS path is live.
+5. Use `NEXT_PRIVATE_TARGET=netlify-static` for static export on Netlify.
+6. Set `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false` and point
+   `NEXT_PUBLIC_API_URL` at the live AWS API Gateway URL for production.
 
 Web on Vercel:
 

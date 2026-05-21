@@ -2,11 +2,11 @@
 
 Use this when the review deadline is today.
 
-## Fastest Hosted Demo: Netlify
+## Hosted App: Netlify
 
-Stable demo URL: https://speakable-app.netlify.app/
+Stable production URL: https://speakable-app.netlify.app/
 
-Deploy the web app on Netlify with a clearly labeled demo mode. The repo has a
+Deploy the web app on Netlify with the AWS API URL configured. The repo has a
 root `netlify.toml`, so Netlify can detect the build settings automatically.
 
 In Netlify:
@@ -25,15 +25,16 @@ Expected build settings:
 The `netlify.toml` file sets:
 
 ```text
-NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=true
+NEXT_PRIVATE_TARGET=netlify-static
+NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false
 NEXT_PUBLIC_AWS_REGION=us-east-1
 NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID=us-east-1_Elr16XsoJ
 NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID=737qee90btb50j0cks8mk1qu40
+NEXT_PUBLIC_API_URL=https://cl539orkch.execute-api.us-east-1.amazonaws.com
 ```
 
-This makes the hosted app usable without AWS API/RDS resources. The UI labels
-the state as `Submission demo`, uses deterministic local coaching logic, and
-does not claim production database persistence is live.
+This makes the hosted app use Cognito plus the live AWS API/RDS path. For
+Netlify static export, keep `NEXT_PRIVATE_TARGET=netlify-static`.
 
 ## Alternate Hosted Demo: Vercel
 
