@@ -1,8 +1,11 @@
 {
   "ServiceName": "speakable-api",
   "SourceConfiguration": {
+    "AuthenticationConfiguration": {
+      "AccessRoleArn": "arn:aws:iam::611931653709:role/speakable-apprunner-ecr-access-role"
+    },
     "ImageRepository": {
-      "ImageIdentifier": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/speakable-api:latest",
+      "ImageIdentifier": "611931653709.dkr.ecr.us-east-1.amazonaws.com/speakable-api:latest",
       "ImageRepositoryType": "ECR",
       "ImageConfiguration": {
         "Port": "8000",
@@ -10,12 +13,34 @@
           "APP_ENV": "production",
           "AUTH_PROVIDER": "cognito",
           "REQUIRE_AUTH": "true",
+          "AWS_REGION": "us-east-1",
+          "AWS_COGNITO_USER_POOL_ID": "us-east-1_Elr16XsoJ",
+          "AWS_COGNITO_USER_POOL_CLIENT_ID": "737qee90btb50j0cks8mk1qu40",
+          "API_CORS_ORIGINS": "https://speakable-app.netlify.app",
           "VOICE_ROLE_PLAY_ENABLED": "false",
           "EXTERNAL_SHARING_ENABLED": "false"
+        },
+        "RuntimeEnvironmentSecrets": {
+          "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:611931653709:secret:speakable/prod/database-url-5zxWro"
         }
       }
     },
     "AutoDeploymentsEnabled": true
+  },
+  "InstanceConfiguration": {
+    "Cpu": "0.25 vCPU",
+    "Memory": "0.5 GB",
+    "InstanceRoleArn": "arn:aws:iam::611931653709:role/speakable-apprunner-instance-role"
+  },
+  "NetworkConfiguration": {
+    "EgressConfiguration": {
+      "EgressType": "VPC",
+      "VpcConnectorArn": "REPLACE_WITH_VPC_CONNECTOR_ARN"
+    },
+    "IngressConfiguration": {
+      "IsPubliclyAccessible": true
+    },
+    "IpAddressType": "IPV4"
   },
   "HealthCheckConfiguration": {
     "Protocol": "HTTP",

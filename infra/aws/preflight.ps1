@@ -64,10 +64,34 @@ Invoke-Check "ECR repository" {
     --output table
 }
 
+Invoke-Check "ECR images" {
+  & $awsCommand ecr describe-images `
+    --region $Region `
+    --repository-name $EcrRepository `
+    --query "sort_by(imageDetails,& imagePushedAt)[-3:].{Tags:imageTags,Digest:imageDigest,Pushed:imagePushedAt}" `
+    --output table
+}
+
 Invoke-Check "RDS instances" {
   & $awsCommand rds describe-db-instances `
     --region $Region `
     --query "DBInstances[].{Id:DBInstanceIdentifier,Status:DBInstanceStatus,Engine:Engine,Endpoint:Endpoint.Address,Port:Endpoint.Port}" `
+    --output table
+}
+
+Invoke-Check "Runtime secret" {
+  & $awsCommand secretsmanager describe-secret `
+    --region $Region `
+    --secret-id "speakable/prod/database-url" `
+    --query "{Name:Name,ARN:ARN,LastChanged:LastChangedDate}" `
+    --output table
+}
+
+Invoke-Check "CodeBuild image builder" {
+  & $awsCommand codebuild batch-get-projects `
+    --region $Region `
+    --names "speakable-api-image-build" `
+    --query "projects[].{Name:name,ServiceRole:serviceRole}" `
     --output table
 }
 

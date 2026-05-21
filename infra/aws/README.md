@@ -30,12 +30,23 @@ Required API variables:
 
 ## RDS PostgreSQL
 
-1. Create an RDS PostgreSQL instance.
-2. Enable the `pgvector` extension by running the migration in
-   `database/migrations/0001_initial_schema.sql`.
-3. Store the app database URL in `DATABASE_URL`.
-4. Run `npm run db:migrate` and intentionally run `npm run db:seed` only for
-   non-production/demo environments.
+Current production database:
+
+- DB instance: `speakable-prod-postgres`
+- Endpoint: `speakable-prod-postgres.cchio2a2ewwk.us-east-1.rds.amazonaws.com`
+- Engine: PostgreSQL `18.3`
+- Instance class: `db.t4g.micro`
+- Security group: `sg-0ce71c01d76ccfbd5`
+- App Runner connector security group: `sg-0990408ed92f67a4d`
+- DB URL secret: `arn:aws:secretsmanager:us-east-1:611931653709:secret:speakable/prod/database-url-5zxWro`
+
+The migration in `database/migrations/0001_initial_schema.sql` has been applied.
+The database has `pgcrypto`, `pgvector`, 17 public tables, 4 starter scenarios,
+and 3 starter lessons.
+
+Do not run `npm run db:seed` against production unless intentionally creating a
+demo database. The seed file inserts fixed demo users that will not match real
+Cognito user IDs.
 
 The schema uses application-set session variables for RLS:
 
@@ -55,9 +66,18 @@ and database connectivity before disabling web/mobile demo mode.
 3. Configure API environment variables from `services/api/.env.example`.
 4. Set the GitHub secrets listed in the root `README.md`.
 
-The deploy workflow builds `services/api/Dockerfile`, pushes both `latest` and
-the commit SHA tag to ECR, and starts an App Runner deployment when AWS secrets
-are configured.
+Current API image:
+
+- ECR repository: `611931653709.dkr.ecr.us-east-1.amazonaws.com/speakable-api`
+- Image tags: `latest`, `ba9f7cdf2fb7`
+- Build project used for AWS-side image push: `speakable-api-image-build`
+- ECR access role: `arn:aws:iam::611931653709:role/speakable-apprunner-ecr-access-role`
+- Runtime instance role: `arn:aws:iam::611931653709:role/speakable-apprunner-instance-role`
+
+The deploy workflow can build `services/api/Dockerfile`, push both `latest` and
+the commit SHA tag to ECR, and start an App Runner deployment when AWS secrets
+are configured. A one-time AWS CodeBuild project is also available for image
+builds if local Docker push fails.
 
 If `aws apprunner list-services` returns `SubscriptionRequiredException`, enable
 AWS App Runner for the account in the AWS console before creating the service.
@@ -74,21 +94,28 @@ Current reusable resources:
 - Cognito user pool: `us-east-1_Elr16XsoJ`
 - Cognito web/mobile app client: `737qee90btb50j0cks8mk1qu40`
 - ECR repository: `611931653709.dkr.ecr.us-east-1.amazonaws.com/speakable-api`
+- RDS DB instance: `speakable-prod-postgres`
+- RDS security group: `sg-0ce71c01d76ccfbd5`
+- App Runner connector security group: `sg-0990408ed92f67a4d`
+- App Runner ECR access role: `arn:aws:iam::611931653709:role/speakable-apprunner-ecr-access-role`
+- App Runner runtime role: `arn:aws:iam::611931653709:role/speakable-apprunner-instance-role`
+- Database URL secret: `arn:aws:secretsmanager:us-east-1:611931653709:secret:speakable/prod/database-url-5zxWro`
 
 Cutover order:
 
-1. Confirm paid AWS resource creation is approved.
-2. Create the RDS PostgreSQL database and capture its `DATABASE_URL`.
-3. Run `DATABASE_URL="<rds-url>" npm run db:migrate`.
-4. Enable App Runner for the account if needed.
-5. Create an App Runner service from the ECR image using `infra/aws/apprunner.example.json`.
-6. Configure App Runner runtime variables:
+1. Enable App Runner for the account if `aws apprunner list-services` returns
+   `SubscriptionRequiredException`.
+2. Create an App Runner VPC connector using the default VPC subnets and
+   `sg-0990408ed92f67a4d`.
+3. Create an App Runner service from the ECR image using port `8000`.
+4. Configure App Runner runtime variables:
    `APP_ENV=production`, `AUTH_PROVIDER=cognito`, `REQUIRE_AUTH=true`,
    `AWS_REGION=us-east-1`, `AWS_COGNITO_USER_POOL_ID=us-east-1_Elr16XsoJ`,
    `AWS_COGNITO_USER_POOL_CLIENT_ID=737qee90btb50j0cks8mk1qu40`,
-   `DATABASE_URL=<rds-url>`, `API_CORS_ORIGINS=https://speakable-app.netlify.app`.
-7. Verify `https://<app-runner-url>/health` returns `ok`.
-8. Verify `https://<app-runner-url>/ready` returns `ready`.
-9. Set Netlify `NEXT_PUBLIC_API_URL=https://<app-runner-url>`.
-10. Set Netlify `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false`.
-11. Redeploy Netlify and rerun the reviewer flow.
+   `DATABASE_URL=<database-url-secret>`,
+   `API_CORS_ORIGINS=https://speakable-app.netlify.app`.
+5. Verify `https://<app-runner-url>/health` returns `ok`.
+6. Verify `https://<app-runner-url>/ready` returns `ready`.
+7. Set Netlify `NEXT_PUBLIC_API_URL=https://<app-runner-url>`.
+8. Set Netlify `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false`.
+9. Redeploy Netlify and rerun the reviewer flow.
