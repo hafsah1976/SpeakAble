@@ -90,8 +90,23 @@ Invoke-Check "Runtime secret" {
 Invoke-Check "CodeBuild image builder" {
   & $awsCommand codebuild batch-get-projects `
     --region $Region `
-    --names "speakable-api-image-build" `
+    --names "speakable-api-image-build" "speakable-api-lambda-image-build" `
     --query "projects[].{Name:name,ServiceRole:serviceRole}" `
+    --output table
+}
+
+Invoke-Check "Lambda API" {
+  & $awsCommand lambda get-function-configuration `
+    --region $Region `
+    --function-name "speakable-api" `
+    --query "{Name:FunctionName,State:State,LastUpdateStatus:LastUpdateStatus,PackageType:PackageType,Timeout:Timeout,Memory:MemorySize}" `
+    --output table
+}
+
+Invoke-Check "HTTP API Gateway" {
+  & $awsCommand apigatewayv2 get-apis `
+    --region $Region `
+    --query "Items[?Name=='speakable-api-http'].{Name:Name,ApiId:ApiId,Endpoint:ApiEndpoint}" `
     --output table
 }
 

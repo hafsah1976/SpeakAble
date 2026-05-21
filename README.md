@@ -148,6 +148,18 @@ Web on Vercel:
    `NEXT_PUBLIC_AWS_COGNITO_USER_POOL_CLIENT_ID`, and `NEXT_PUBLIC_API_URL`.
 5. Set `NEXT_PUBLIC_ALLOW_LOCAL_DEMO_FALLBACK=false`.
 
+API on AWS Lambda/API Gateway:
+
+1. Build `services/api/Dockerfile.lambda` and push to ECR repo
+   `speakable-api-lambda`.
+2. Run Lambda function `speakable-api` in the default VPC with security group
+   `sg-0990408ed92f67a4d`.
+3. Expose it through HTTP API Gateway `speakable-api-http`.
+4. Set `TRUST_GATEWAY_AUTH=true` so FastAPI trusts API Gateway JWT authorizer
+   claims.
+5. Production API URL:
+   `https://cl539orkch.execute-api.us-east-1.amazonaws.com`.
+
 API on AWS App Runner:
 
 1. Create an ECR repository and an App Runner service for `services/api/Dockerfile`.
@@ -155,6 +167,8 @@ API on AWS App Runner:
 3. Set `REQUIRE_AUTH=true`, `AUTH_PROVIDER=cognito`, and `DATABASE_URL`.
 4. Push to `main` or run the `Deploy` workflow.
 5. Verify `/health` for platform health and `/ready` for Cognito/database readiness.
+6. App Runner is optional after launch; the current live API uses Lambda/API
+   Gateway because App Runner requires account enablement.
 
 AWS production preflight:
 

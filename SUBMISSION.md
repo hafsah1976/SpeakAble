@@ -59,14 +59,16 @@ does not claim production database persistence is live.
 
 ## Full AWS Live Path
 
-Create these resources before calling the app fully live:
+The app is now using the AWS live path:
 
 1. AWS Cognito user pool with email sign-up and a public web/mobile app client.
 2. AWS RDS PostgreSQL database with `pgcrypto` and `pgvector` enabled.
-3. AWS ECR repository for the FastAPI Docker image.
-4. AWS App Runner service using the ECR image and port `8000`.
-5. Vercel project connected to the GitHub repo.
-6. Expo/EAS project for mobile builds.
+3. AWS ECR repositories for the FastAPI and Lambda images.
+4. AWS Lambda function `speakable-api` running the FastAPI container in the VPC.
+5. AWS API Gateway HTTP API `speakable-api-http` with Cognito JWT auth.
+6. Netlify web app pointed at
+   `https://cl539orkch.execute-api.us-east-1.amazonaws.com`.
+7. Expo/EAS project scaffolding for mobile builds.
 
 Required GitHub secrets:
 
