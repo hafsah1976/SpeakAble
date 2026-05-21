@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+import psycopg
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -54,6 +55,40 @@ def create_app() -> FastAPI:
     @app.get("/health", tags=["health"])
     async def health() -> dict[str, str]:
         return {"status": "ok", "service": "speakable-api", "version": "0.1.0"}
+
+    @app.get("/ready", tags=["health"])
+    async def ready() -> JSONResponse:
+        current_settings = get_settings()
+        checks: dict[str, str] = {
+            "api": "ok",
+            "auth": "skipped",
+            "database": "skipped",
+        }
+
+        if current_settings.require_auth:
+            checks["auth"] = (
+                "ok"
+                if current_settings.cognito_issuer
+                and current_settings.aws_cognito_user_pool_client_id
+                else "missing_config"
+            )
+
+        requires_database = current_settings.app_env == "production" or current_settings.require_auth
+        if current_settings.database_url:
+            try:
+                with psycopg.connect(current_settings.database_url, connect_timeout=2) as connection:
+                    connection.execute("select 1")
+                checks["database"] = "ok"
+            except psycopg.Error:
+                checks["database"] = "unavailable"
+        elif requires_database:
+            checks["database"] = "missing_config"
+
+        is_ready = all(value in {"ok", "skipped"} for value in checks.values())
+        return JSONResponse(
+            status_code=status.HTTP_200_OK if is_ready else status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "ready" if is_ready else "not_ready", "checks": checks},
+        )
 
     app.include_router(coach.router, prefix="/v1")
     app.include_router(onboarding.router, prefix="/v1")

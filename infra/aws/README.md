@@ -44,6 +44,10 @@ The schema uses application-set session variables for RLS:
 
 The FastAPI persistence layer sets those variables before user-owned queries.
 
+Production readiness is exposed by the API at `/ready`. Keep App Runner health
+checks pointed at `/health`, then use `/ready` during cutover to confirm Cognito
+and database connectivity before disabling web/mobile demo mode.
+
 ## App Runner API
 
 1. Create an ECR repository for the API image.
@@ -54,3 +58,37 @@ The FastAPI persistence layer sets those variables before user-owned queries.
 The deploy workflow builds `services/api/Dockerfile`, pushes both `latest` and
 the commit SHA tag to ECR, and starts an App Runner deployment when AWS secrets
 are configured.
+
+If `aws apprunner list-services` returns `SubscriptionRequiredException`, enable
+AWS App Runner for the account in the AWS console before creating the service.
+If local `docker info` cannot connect to Docker Desktop, either start Docker
+Desktop locally or let GitHub Actions build and push the image after AWS secrets
+are configured.
+
+## Production Cutover Checklist
+
+Current reusable resources:
+
+- Region: `us-east-1`
+- AWS account: `611931653709`
+- Cognito user pool: `us-east-1_Elr16XsoJ`
+- Cognito web/mobile app client: `737qee90btb50j0cks8mk1qu40`
+- ECR repository: `611931653709.dkr.ecr.us-east-1.amazonaws.com/speakable-api`
+
+Cutover order:
+
+1. Confirm paid AWS resource creation is approved.
+2. Create the RDS PostgreSQL database and capture its `DATABASE_URL`.
+3. Run `DATABASE_URL="<rds-url>" npm run db:migrate`.
+4. Enable App Runner for the account if needed.
+5. Create an App Runner service from the ECR image using `infra/aws/apprunner.example.json`.
+6. Configure App Runner runtime variables:
+   `APP_ENV=production`, `AUTH_PROVIDER=cognito`, `REQUIRE_AUTH=true`,
+   `AWS_REGION=us-east-1`, `AWS_COGNITO_USER_POOL_ID=us-east-1_Elr16XsoJ`,
+   `AWS_COGNITO_USER_POOL_CLIENT_ID=737qee90btb50j0cks8mk1qu40`,
+   `DATABASE_URL=<rds-url>`, `API_CORS_ORIGINS=https://speakable-app.netlify.app`.
+7. Verify `https://<app-runner-url>/health` returns `ok`.
+8. Verify `https://<app-runner-url>/ready` returns `ready`.
+9. Set Netlify `NEXT_PUBLIC_API_URL=https://<app-runner-url>`.
+10. Set Netlify `NEXT_PUBLIC_ENABLE_SUBMISSION_DEMO=false`.
+11. Redeploy Netlify and rerun the reviewer flow.

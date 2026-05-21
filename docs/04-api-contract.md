@@ -25,6 +25,8 @@ Unauthenticated local development is allowed only when `REQUIRE_AUTH=false`.
 
 ## Endpoints
 
+- `GET /health`: shallow service health for platform load balancers.
+- `GET /ready`: production readiness check for API config, Cognito config when auth is required, and database connectivity when configured.
 - `POST /v1/onboarding`: stores age gate result, consent, goals, privacy controls, and accessibility preferences.
 - `GET /v1/assessment/baseline/questions`: returns baseline communication-style questions.
 - `POST /v1/assessment/baseline`: scores the baseline assessment and returns style, six-dimension score, and recommended lessons.

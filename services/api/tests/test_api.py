@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.core.persistence import reset_local_persistence_store
 from app.main import app
 
@@ -18,6 +19,37 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+def test_readiness_skips_database_for_local_development() -> None:
+    get_settings.cache_clear()
+
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ready"
+    assert body["checks"]["database"] == "skipped"
+
+
+def test_readiness_reports_missing_production_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("REQUIRE_AUTH", "true")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("AWS_REGION", raising=False)
+    monkeypatch.delenv("AWS_COGNITO_USER_POOL_ID", raising=False)
+    monkeypatch.delenv("AWS_COGNITO_USER_POOL_CLIENT_ID", raising=False)
+    get_settings.cache_clear()
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+    body = response.json()
+    assert body["status"] == "not_ready"
+    assert body["checks"]["auth"] == "missing_config"
+    assert body["checks"]["database"] == "missing_config"
+
+    get_settings.cache_clear()
 
 
 def test_rewrite_returns_assertive_text() -> None:

@@ -1191,6 +1191,25 @@
         ]
       }
     },
+    "/ready": {
+      "get": {
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/v1/admin/moderation/reports": {
       "get": {
         "operationId": "list_reports_v1_admin_moderation_reports_get",

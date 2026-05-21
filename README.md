@@ -152,6 +152,13 @@ API on AWS App Runner:
 2. Configure API env vars from `services/api/.env.example`.
 3. Set `REQUIRE_AUTH=true`, `AUTH_PROVIDER=cognito`, and `DATABASE_URL`.
 4. Push to `main` or run the `Deploy` workflow.
+5. Verify `/health` for platform health and `/ready` for Cognito/database readiness.
+
+AWS production preflight:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File infra/aws/preflight.ps1
+```
 
 AWS RDS Postgres:
 
